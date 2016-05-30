@@ -18,6 +18,8 @@ last : List a -> Maybe a
 last =
   List.head << List.reverse
 
+-- facts
+
 isLeapYear : Int -> Bool
 isLeapYear y =
   y % 4 == 0 && y % 100 /= 0 || y % 400 == 0
@@ -55,7 +57,8 @@ daysAtStartOfMonth y m =
     Dec -> if isLeapYear y then 335 else 334
 
 months : List Month
-months = [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
+months =
+  [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
 
 leapYearsInCommonEra : Int -> Int
 leapYearsInCommonEra y =
@@ -121,7 +124,8 @@ isoWeekdayFromRataDie rd =
 -- unix time
 
 unixEpochRD : RataDie
-unixEpochRD = 719163
+unixEpochRD =
+  719163
 
 unixDaysFromYMD : Int -> Month -> Int -> Int
 unixDaysFromYMD y m d =
@@ -134,6 +138,35 @@ unixTimeFromSpec y m d hh mm ss ms =
     + mm * 60000
     + ss * 1000
     + ms
+
+-- conversions
+
+isoWeekdayFromDayOfWeek : Day -> Int
+isoWeekdayFromDayOfWeek d =
+  case d of
+    Mon -> 1
+    Tue -> 2
+    Wed -> 3
+    Thu -> 4
+    Fri -> 5
+    Sat -> 6
+    Sun -> 7
+
+monthFromMonthNumber : Int -> Month
+monthFromMonthNumber n =
+  case n of
+    1  -> Jan
+    2  -> Feb
+    3  -> Mar
+    4  -> Apr
+    5  -> May
+    6  -> Jun
+    7  -> Jul
+    8  -> Aug
+    9  -> Sep
+    10 -> Oct
+    11 -> Nov
+    _  -> Dec
 
 -- extractions
 
@@ -148,36 +181,29 @@ timezoneOffset : Date -> Int
 timezoneOffset date =
   (timezoneOffsetMS date) // 1000 // 60
 
--- create Date
--- TODO default to Local?
-type Timezone = UTC | Local
+monthNumber : Date -> Int
+monthNumber date =
+  case month date of
+    Jan -> 1
+    Feb -> 2
+    Mar -> 3
+    Apr -> 4
+    May -> 5
+    Jun -> 6
+    Jul -> 7
+    Aug -> 8
+    Sep -> 9
+    Oct -> 10
+    Nov -> 11
+    Dec -> 12
 
-dateFromSpec : Timezone -> Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
-dateFromSpec tz y m d hh mm ss ms =
-  let
-    date = Date.fromTime <| toFloat <| unixTimeFromSpec y m d hh mm ss ms
-  in
-    case tz of
-      UTC -> date
-      Local -> Date.fromTime <| toFloat <| unixTimeFromSpec y m d hh mm ss ms + timezoneOffsetMS date
-
--- extractions
-
-{-
-isoWeekdayFromDayOfWeek : Day -> Int
-isoWeekdayFromDayOfWeek d =
--}
+quarter : Date -> Int
+quarter date =
+  monthNumber date |> toFloat |> (\n -> n / 3) |> ceiling
 
 isoWeekday : Date -> Int
 isoWeekday date =
-  case dayOfWeek date of
-    Mon -> 1
-    Tue -> 2
-    Wed -> 3
-    Thu -> 4
-    Fri -> 5
-    Sat -> 6
-    Sun -> 7
+  isoWeekdayFromDayOfWeek <| dayOfWeek date
 
 isoYear : Date -> Int
 isoYear date =
@@ -197,12 +223,25 @@ isoWeek date =
   in
     (+) 1 <| floor <| toFloat (rataDieFromYMD (year date) (month date) (day date) - week1Day1RD) / 7
 
+-- create Date
+
+dateFromSpecUTC : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
+dateFromSpecUTC y m d hh mm ss ms =
+  Date.fromTime <| toFloat <| unixTimeFromSpec y m d hh mm ss ms
+
+dateFromSpec : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
+dateFromSpec y m d hh mm ss ms =
+  let
+    date = dateFromSpecUTC y m d hh mm ss ms
+  in
+    Date.fromTime <| toFloat <| unixTimeFromSpec y m d hh mm ss ms + timezoneOffsetMS date
+
+dateFromYMD : Int -> Month -> Int -> Date
+dateFromYMD y m d =
+  dateFromSpec y m d 0 0 0 0
+
 -- temp
 
 isoWeekDateFromDate : Date -> (Int, Int, Int)
 isoWeekDateFromDate date =
   (isoYear date, isoWeek date, isoWeekday date)
-
-dateFromYMD : Int -> Month -> Int -> Date
-dateFromYMD y m d =
-  dateFromSpec Local y m d 0 0 0 0

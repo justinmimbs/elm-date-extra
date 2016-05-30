@@ -1,25 +1,9 @@
 module DateFormat exposing (..)
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import DateFunctions exposing (..) --TODO name imports
+import DateFunctions exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, timezoneOffset)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
-
-monthNumber : Month -> Int
-monthNumber m =
-  case m of
-    Jan -> 1
-    Feb -> 2
-    Mar -> 3
-    Apr -> 4
-    May -> 5
-    Jun -> 6
-    Jul -> 7
-    Aug -> 8
-    Sep -> 9
-    Oct -> 10
-    Nov -> 11
-    Dec -> 12
 
 monthName : Month -> String
 monthName m =
@@ -78,7 +62,8 @@ isoOffsetFromMinutesOffset sep minutes =
     sign ++ hh ++ sep ++ mm
 
 tokens : Regex
-tokens = regex "yy(?:yy)?|m{1,4}|d{1,4}|([wHhMsAa])\\1?|[SqNolOP]|\\[.*?\\]"
+tokens =
+  regex "yy(?:yy)?|m{1,4}|d{1,4}|([wHhMsAa])\\1?|[SqNolOP]|\\[.*?\\]"
 
 f : Date -> String -> String
 f date token =
@@ -88,14 +73,14 @@ f date token =
     "yy"   -> year date |> toString |> slice 2 4
     "mmmm" -> month date |> monthName
     "mmm"  -> month date |> monthName |> slice 0 3
-    "mm"   -> month date |> monthNumber |> toString |> padLeft 2 '0'
-    "m"    -> month date |> monthNumber |> toString
+    "mm"   -> monthNumber date |> toString |> padLeft 2 '0'
+    "m"    -> monthNumber date |> toString
     "dddd" -> dayOfWeek date |> dayOfWeekName
     "ddd"  -> dayOfWeek date |> dayOfWeekName |> slice 0 3
     "dd"   -> day date |> toString |> padLeft 2 '0'
     "d"    -> day date |> toString
     "S"    -> day date |> ordinalSuffix
-    "q"    -> month date |> monthNumber |> toFloat |> (\n -> ceiling (n / 3)) |> toString
+    "q"    -> quarter date |> toString
     "o"    -> isoYear date |> toString
     "ww"   -> isoWeek date |> toString |> padLeft 2 '0'
     "w"    -> isoWeek date |> toString
@@ -117,7 +102,7 @@ f date token =
     "O"    -> timezoneOffset date |> isoOffsetFromMinutesOffset ""
     "P"    -> timezoneOffset date |> isoOffsetFromMinutesOffset ":"
     -- escaped
-    s -> slice 1 -1 s
+    s      -> slice 1 -1 s
 
 format : String -> Date -> String
 format s date =
