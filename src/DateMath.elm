@@ -134,12 +134,12 @@ dateDiffMonth date1 date2 =
     fractionOfMonth : Date -> Float
     fractionOfMonth date =
       ((day date - 1 |> toFloat) + fractionOfDay date) / 31
-    
+
     ordinalMonth' : Date -> Float
     ordinalMonth' date =
       (ordinalMonth date |> toFloat) + fractionOfMonth date
   in
-    ordinalMonth' date2 - ordinalMonth' date1 |> truncate    
+    ordinalMonth' date2 - ordinalMonth' date1 |> truncate
 
 dateDiff : Interval -> Date -> Date -> Int
 dateDiff interval date1 date2 =
@@ -168,4 +168,4 @@ dateRange interval step start end =
       else
         Just (date, dateAdd interval (max 1 step) date)
   in
-    unfold next (dateCeil interval start)
+    unfold next <| dateCeil interval start

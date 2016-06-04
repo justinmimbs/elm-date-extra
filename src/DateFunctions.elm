@@ -179,7 +179,7 @@ timezoneOffsetMS date =
 
 timezoneOffset : Date -> Int
 timezoneOffset date =
-  (timezoneOffsetMS date) // 1000 // 60
+  (timezoneOffsetMS date) // 60000
 
 monthNumber : Date -> Int
 monthNumber date =
@@ -239,9 +239,3 @@ dateFromSpec y m d hh mm ss ms =
 dateFromYMD : Int -> Month -> Int -> Date
 dateFromYMD y m d =
   dateFromSpec y m d 0 0 0 0
-
--- temp
-
-isoWeekDateFromDate : Date -> (Int, Int, Int)
-isoWeekDateFromDate date =
-  (isoYear date, isoWeek date, isoWeekday date)
