@@ -1,9 +1,10 @@
 module DateFunctions exposing (..)
 
 import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
+import Regex exposing (Regex, regex)
 
 takeWhile : (a -> Bool) -> List a -> List a
-takeWhile pred list = 
+takeWhile pred list =
   case list of
     [] -> []
     x::xs -> if pred x then x :: (takeWhile pred xs) else []
@@ -221,7 +222,7 @@ isoWeek date =
     daysToMonday = 1 - (isoWeekdayFromRataDie jan4RD)
     week1Day1RD = jan4RD + daysToMonday
   in
-    (+) 1 <| floor <| toFloat (rataDieFromYMD (year date) (month date) (day date) - week1Day1RD) / 7
+    toFloat (rataDieFromYMD (year date) (month date) (day date) - week1Day1RD) / 7 |> floor |> (+) 1
 
 -- create Date
 
@@ -239,3 +240,55 @@ dateFromSpec y m d hh mm ss ms =
 dateFromYMD : Int -> Month -> Int -> Date
 dateFromYMD y m d =
   dateFromSpec y m d 0 0 0 0
+
+-- date string parsing
+
+isoDateRegex : Regex
+isoDateRegex =
+  let
+    date =
+      "^(?:(\\d{4})(?:(\\-)?(\\d\\d))?(?:\\2(\\d\\d))?)"
+      --   1          2     3               4
+      --   yyyy             mm              dd
+    time =
+      "(?:T(\\d\\d)(?:(\\:)?(\\d\\d)(?:\\6(\\d\\d))?)?(\\.\\d+)?(?:(Z)|(?:([+\\-])(\\d\\d)(?:\\:?(\\d\\d))?))?)?$"
+      --   5          6     7             8           9            10     11      12             13
+      --   hh               mm            ss          .f           Z      +/-     hh             mm
+  in
+    regex (date ++ time)
+
+
+{-
+
+dateFromISOString : String -> Maybe Date
+
+
+ymdFromDateMatches (y, m, d)
+  Maybe.withDefault for each submatch
+
+
+msFromTimeMatches
+  let
+    frac
+
+  if frac
+    case of
+      Just hh, Just mm, Just ss
+      Just hh, Just mm, Nothing
+      Just hh, Nothing, Nothing
+      _
+  else
+    map toInt |> map with default 0
+
+let
+  y m d
+  ms
+in {-matching on Timezone type-}
+  -> UTC
+  -> Offset Int
+  -> Local
+
+
+timezoneFromMatches t
+
+-}
