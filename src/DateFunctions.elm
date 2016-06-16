@@ -1,7 +1,8 @@
 module DateFunctions exposing (..)
 
-import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Regex exposing (Regex, regex)
+import Date exposing (Date, Month(..), Day(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
+import Regex exposing (Regex, HowMany(AtMost), regex)
+import String
 
 takeWhile : (a -> Bool) -> List a -> List a
 takeWhile pred list =
@@ -243,6 +244,14 @@ dateFromYMD y m d =
 
 -- date string parsing
 
+stringToMaybeInt : String -> Maybe Int
+stringToMaybeInt s =
+  String.toInt s |> Result.toMaybe
+
+stringToMaybeFloat : String -> Maybe Float
+stringToMaybeFloat s =
+  String.toFloat s |> Result.toMaybe
+
 isoDateRegex : Regex
 isoDateRegex =
   let
@@ -257,28 +266,55 @@ isoDateRegex =
   in
     regex (date ++ time)
 
+dateFromISOString : String -> Maybe (Int, Month, Int)
+dateFromISOString s =
+  Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches |> (flip Maybe.andThen) dateFromISOMatches
+
+dateFromISOMatches : List (Maybe String) -> Maybe (Int, Month, Int)
+dateFromISOMatches matches =
+  case matches of
+    [dateY, _, dateM, dateD, timeH, _, timeM, timeS, timeF, tzZ, tzSign, tzH, tzM] ->
+      let
+        y = dateY `Maybe.andThen` stringToMaybeInt |> Maybe.withDefault 1
+        m = dateM `Maybe.andThen` stringToMaybeInt |> Maybe.withDefault 1 |> monthFromMonthNumber
+        d = dateD `Maybe.andThen` stringToMaybeInt |> Maybe.withDefault 1
+        ms = Debug.log "ms" (msFromTimeMatches [timeH, timeM, timeS] timeF)
+        --timezone = timezoneFromMatches tzZ tzSign tzH tzM
+      in
+        Just (y, m, d)
+    _ ->
+      Nothing
+
+msFromTimeMatches : List (Maybe String) -> Maybe String -> Int
+msFromTimeMatches maybeHMS maybeF =
+  let
+    f = maybeF `Maybe.andThen` stringToMaybeFloat |> Maybe.withDefault 0.0
+    (hh, mm, ss) =
+      case List.map ((flip Maybe.andThen) stringToMaybeFloat) maybeHMS of
+        [Just hh, Just mm, Just ss] -> (hh, mm, ss + f)
+        [Just hh, Just mm, Nothing] -> (hh, mm + f, 0.0)
+        [Just hh, Nothing, Nothing] -> (hh + f, 0.0, 0.0)
+        _ -> (0.0, 0.0, 0.0)
+  in
+    hh * 3600000 + mm * 60000 + ss * 1000 |> round
+
+-- temp tests
+
+strings : List String
+strings = [
+    "2016",
+    "2016-01",
+    "2016-01-01",
+    "2016-01-01T04",
+    "2016-01-01T04:20",
+    "2016-01-01T04:20:30",
+    "2016-01-01T04:20:30.5",
+    "2016-01-01T04:20:30.555",
+    "2016-01-01T04:20:30.555Z",
+    "2016-01-01T04:20:30.555-04:30"
+  ]
 
 {-
-
-dateFromISOString : String -> Maybe Date
-
-
-ymdFromDateMatches (y, m, d)
-  Maybe.withDefault for each submatch
-
-
-msFromTimeMatches
-  let
-    frac
-
-  if frac
-    case of
-      Just hh, Just mm, Just ss
-      Just hh, Just mm, Nothing
-      Just hh, Nothing, Nothing
-      _
-  else
-    map toInt |> map with default 0
 
 let
   y m d
