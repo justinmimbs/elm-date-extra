@@ -1,7 +1,7 @@
-module DateFormat exposing (..)
+module Date.Format exposing (toStringWithFormat)
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import DateExtract exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, timezoneOffset)
+import Date.Extract exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, timezoneOffset)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
 
@@ -57,14 +57,14 @@ ordinalSuffix n =
         _ -> ""
 
 
-isoOffsetFromMinutesOffset : String -> Int -> String
-isoOffsetFromMinutesOffset sep minutes =
+formatTimezoneOffset : String -> Int -> String
+formatTimezoneOffset separator minutes =
   let
     hh = abs minutes // 60 |> toString |> padLeft 2 '0'
     mm = abs minutes % 60 |> toString |> padLeft 2 '0'
     sign = if minutes <= 0 then "+" else "-"
   in
-    sign ++ hh ++ sep ++ mm
+    sign ++ hh ++ separator ++ mm
 
 
 tokens : Regex
@@ -106,12 +106,12 @@ f date token =
     "A"    -> if hour date < 12 then "A" else "P"
     "aa"   -> if hour date < 12 then "am" else "pm"
     "a"    -> if hour date < 12 then "a" else "p"
-    "O"    -> timezoneOffset date |> isoOffsetFromMinutesOffset ""
-    "P"    -> timezoneOffset date |> isoOffsetFromMinutesOffset ":"
+    "O"    -> timezoneOffset date |> formatTimezoneOffset ""
+    "P"    -> timezoneOffset date |> formatTimezoneOffset ":"
     -- escaped
     s      -> slice 1 -1 s
 
 
-format : String -> Date -> String
-format s date =
-  replace All tokens (\{ match } -> f date match) s
+toStringWithFormat : String -> Date -> String
+toStringWithFormat format date =
+  replace All tokens (\{ match } -> f date match) format

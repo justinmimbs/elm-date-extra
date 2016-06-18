@@ -1,9 +1,9 @@
-module DateCreate exposing (..)
+module Date.Create exposing (..)
 
 import Date exposing (Date, Month)
-import DateFact exposing (msPerMinute)
-import DateInternal exposing (unixTimeFromSpec)
-import DateExtract exposing (timezoneOffset)
+import Date.Fact exposing (msPerMinute)
+import Date.Internal exposing (unixTimeFromSpec)
+import Date.Extract exposing (timezoneOffset)
 
 type Timezone
   = UTC
@@ -19,7 +19,7 @@ dateFromTimezoneSpec tz y m d hh mm ss ms =
     case tz of
       UTC ->
         Date.fromTime <| toFloat unixTime
-      
+
       Offset minutes ->
         Date.fromTime <| toFloat <| unixTime - minutes * msPerMinute
 

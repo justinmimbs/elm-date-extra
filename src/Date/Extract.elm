@@ -1,8 +1,15 @@
-module DateExtract exposing (..)
+module Date.Extract exposing (
+  monthNumber,
+  quarter,
+  isoWeekday,
+  isoYear,
+  isoWeek,
+  timezoneOffset
+  )
 
 import Date exposing (Date, Month(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import DateFact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, msPerMinute)
-import DateInternal exposing (unixTimeFromSpec, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie)
+import Date.Fact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, msPerMinute)
+import Date.Internal exposing (unixTimeFromSpec, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie)
 
 
 monthNumber : Date -> Int

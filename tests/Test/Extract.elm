@@ -1,9 +1,9 @@
-module Test.DateExtract exposing (..)
+module Test.Extract exposing (..)
 
 import Date exposing (Date, Month(..))
-import DateExtract exposing (isoYear, isoWeek, isoWeekday, quarter)
-import DateCreate exposing (dateFromYMD)
-import Test.DateInternal exposing (everyYMDInMonth)
+import Date.Extract exposing (isoYear, isoWeek, isoWeekday, quarter)
+import Date.Create exposing (dateFromYMD)
+import Test.Internal exposing (everyYMDInMonth)
 
 import ElmTest exposing (Test, suite, test, equals, assert)
 

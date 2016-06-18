@@ -1,8 +1,8 @@
-module Test.DateInternal exposing (..)
+module Test.Internal exposing (..)
 
 import Date exposing (Month)
-import DateFact exposing (daysInMonth, months)
-import DateInternal exposing (rataDieFromYMD, ymdFromRataDie)
+import Date.Fact exposing (daysInMonth, months)
+import Date.Internal exposing (rataDieFromYMD, ymdFromRataDie)
 
 import ElmTest exposing (Test, suite, defaultTest, assertionList)
 

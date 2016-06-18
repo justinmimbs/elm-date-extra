@@ -1,7 +1,13 @@
-module DateInternal exposing (..)
+module Date.Internal exposing (
+  unixTimeFromSpec,
+  rataDieFromYMD,
+  ymdFromRataDie,
+  yearFromRataDie,
+  isoWeekdayFromRataDie
+  )
 
 import Date exposing (Month(..))
-import DateFact exposing (daysBeforeStartOfMonth, months, msPerSecond, msPerMinute, msPerHour, msPerDay)
+import Date.Fact exposing (daysBeforeStartOfMonth, months, msPerSecond, msPerMinute, msPerHour, msPerDay)
 
 
 find : (a -> Bool) -> List a -> Maybe a

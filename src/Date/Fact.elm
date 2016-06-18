@@ -1,4 +1,4 @@
-module DateFact exposing (..)
+module Date.Fact exposing (..)
 
 import Date exposing(Month(..), Day(..))
 

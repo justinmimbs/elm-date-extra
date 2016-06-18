@@ -1,10 +1,10 @@
-module DateMath exposing (..)
+module Date.Math exposing (..)
 
 import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import DateFact exposing (monthFromMonthNumber, isoWeekdayFromDayOfWeek)
-import DateInternal exposing (rataDieFromYMD)
-import DateExtract exposing (monthNumber, quarter, isoWeekday)
-import DateCreate exposing (dateFromSpec, dateFromYMD)
+import Date.Fact exposing (monthFromMonthNumber, isoWeekdayFromDayOfWeek)
+import Date.Internal exposing (rataDieFromYMD)
+import Date.Extract exposing (monthNumber, quarter, isoWeekday)
+import Date.Create exposing (dateFromSpec, dateFromYMD)
 
 
 unfold : (b -> Maybe (a, b)) -> b -> List a

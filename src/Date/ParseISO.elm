@@ -1,10 +1,10 @@
-module DateParse exposing (..)
+module Date.ParseISO exposing (..)
 
 import Regex exposing (Regex, HowMany(AtMost), regex)
 import String
 import Date exposing (Date, Month)
-import DateFact exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
-import DateCreate exposing (Timezone(..), dateFromTimezoneSpec)
+import Date.Fact exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
+import Date.Create exposing (Timezone(..), dateFromTimezoneSpec)
 
 
 (>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -90,13 +90,13 @@ timezoneFromMatches tzZ tzSign tzH tzM =
   case (tzZ, tzSign) of
     (Just "Z", Nothing) ->
       UTC
-    
+
     (Nothing, Just sign) ->
       let
         hh = (tzH >>= stringToInt) ? 0
         mm = (tzM >>= stringToInt) ? 0
       in
         Offset <| (if sign == "+" then 1 else -1) * (hh * 60 + mm)
-    
+
     _ ->
       Local
