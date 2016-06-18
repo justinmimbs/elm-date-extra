@@ -1,41 +1,16 @@
-module Tests exposing (..)
+module Test.DateExtract exposing (..)
 
 import Date exposing (Date, Month(..))
-import DateFunctions exposing (..)
+import DateExtract exposing (isoYear, isoWeek, isoWeekday, quarter)
+import DateCreate exposing (dateFromYMD)
+import Test.DateInternal exposing (everyYMDInMonth)
 
-import ElmTest exposing (Test, suite, test, defaultTest, equals, assert, assertEqual, assertNotEqual, assertionList, runSuiteHtml)
+import ElmTest exposing (Test, suite, test, equals, assert)
 
-everyYMDInMonth : Int -> Month -> List (Int, Month, Int)
-everyYMDInMonth y m =
-  List.map (\d ->
-    (y, m, d)
-  ) [ 1 .. (daysInMonth y m) ]
-
-everyYMDInYear : Int -> List (Int, Month, Int)
-everyYMDInYear y =
-  List.concatMap (everyYMDInMonth y) months
 
 everyDateInMonth : Int -> Month -> List Date
 everyDateInMonth y m =
   everyYMDInMonth y m |> List.map (\(y, m, d) -> dateFromYMD y m d)
-
-
-{-| Converting (year, month, day) : (Int, Month, Int) to RataDie and back is lossless.
--}
-
-rataDieTests : Test
-rataDieTests =
-  let
-    ymdList : List (Int, Month, Int)
-    ymdList =
-      List.concatMap everyYMDInYear <| List.concat [ [ 1 .. 4 ], [ 97 .. 105 ], [ 397 .. 405], [ 1897 .. 1905 ], [ 1997 .. 2005 ] ]
-
-    ymdFromRataDieFromYMD : (Int, Month, Int) -> (Int, Month, Int)
-    ymdFromRataDieFromYMD (y, m, d) =
-      ymdFromRataDie <| rataDieFromYMD y m d
-  in
-    suite "RataDie" <|
-      List.map defaultTest <| assertionList ymdList <| List.map ymdFromRataDieFromYMD ymdList
 
 
 {-| isoYear, isoWeek, isoWeekday return expected results.
@@ -71,6 +46,7 @@ isoWeekDateTests =
       equals (isoWeekDateFromYMD 2010 Jan  3) (2009, 53, 7)
     ]
 
+
 {-| quarter returns expected results.
 -}
 
@@ -95,12 +71,7 @@ quarterTests =
 
 tests : Test
 tests =
-  suite "DateX" [
-    rataDieTests,
+  suite "DateExtract" [
     isoWeekDateTests,
     quarterTests
   ]
-
-main : Program Never
-main =
-  runSuiteHtml tests

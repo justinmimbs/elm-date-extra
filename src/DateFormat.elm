@@ -1,9 +1,10 @@
 module DateFormat exposing (..)
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import DateFunctions exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, timezoneOffset)
+import DateExtract exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, timezoneOffset)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
+
 
 monthName : Month -> String
 monthName m =
@@ -21,6 +22,7 @@ monthName m =
     Nov -> "November"
     Dec -> "December"
 
+
 dayOfWeekName : Day -> String
 dayOfWeekName d =
   case d of
@@ -32,11 +34,13 @@ dayOfWeekName d =
     Sat -> "Saturday"
     Sun -> "Sunday"
 
+
 hour12 : Date -> Int
 hour12 date =
   case hour date % 12 of
     0 -> 12
     h -> h
+
 
 ordinalSuffix : Int -> String
 ordinalSuffix n =
@@ -52,6 +56,7 @@ ordinalSuffix n =
         4 -> "th"
         _ -> ""
 
+
 isoOffsetFromMinutesOffset : String -> Int -> String
 isoOffsetFromMinutesOffset sep minutes =
   let
@@ -61,9 +66,11 @@ isoOffsetFromMinutesOffset sep minutes =
   in
     sign ++ hh ++ sep ++ mm
 
+
 tokens : Regex
 tokens =
   regex "yy(?:yy)?|m{1,4}|d{1,4}|([wHhMsAa])\\1?|[SqNolOP]|\\[.*?\\]"
+
 
 f : Date -> String -> String
 f date token =
@@ -103,6 +110,7 @@ f date token =
     "P"    -> timezoneOffset date |> isoOffsetFromMinutesOffset ":"
     -- escaped
     s      -> slice 1 -1 s
+
 
 format : String -> Date -> String
 format s date =

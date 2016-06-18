@@ -1,13 +1,18 @@
 module DateMath exposing (..)
 
 import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import DateFunctions exposing (..) --TODO name imports
+import DateFact exposing (monthFromMonthNumber, isoWeekdayFromDayOfWeek)
+import DateInternal exposing (rataDieFromYMD)
+import DateExtract exposing (monthNumber, quarter, isoWeekday)
+import DateCreate exposing (dateFromSpec, dateFromYMD)
+
 
 unfold : (b -> Maybe (a, b)) -> b -> List a
 unfold f seed =
   case f seed of
     Nothing -> []
-    Just (x, seed') -> x :: unfold f seed'
+    Just (x, nextSeed) -> x :: unfold f nextSeed
+
 
 type Interval
   = Millisecond
@@ -27,11 +32,13 @@ type Interval
   | Saturday
   | Sunday
 
+
 -- conversions
 
 specFromDate : Date -> (Int, Month, Int, Int, Int, Int, Int)
 specFromDate date =
   (year date, month date, day date, hour date, minute date, second date, millisecond date)
+
 
 monthFromQuarter : Int -> Month
 monthFromQuarter q =
@@ -41,29 +48,35 @@ monthFromQuarter q =
     3 -> Jul
     _ -> Oct
 
+
 -- extractions
 
 timeOfDayMS : Date -> Int
 timeOfDayMS date =
   toTime date - toTime (dateFromYMD (year date) (month date) (day date)) |> floor
 
+
 fractionOfDay : Date -> Float
 fractionOfDay date =
   (timeOfDayMS date |> toFloat) / 86400000
 
-rataDie : Date -> Float
-rataDie date =
+
+toRataDie : Date -> Float
+toRataDie date =
   (rataDieFromYMD (year date) (month date) (day date) |> toFloat) + fractionOfDay date
+
 
 ordinalMonth : Date -> Int
 ordinalMonth date =
   (year date) * 12 + (monthNumber date)
+
 
 -- operations
 
 daysToPreviousDayOfWeek : Day -> Date -> Int
 daysToPreviousDayOfWeek d date =
   negate <| (isoWeekday date - isoWeekdayFromDayOfWeek d + 7) % 7
+
 
 dateFloor : Interval -> Date -> Date
 dateFloor interval date =
@@ -88,6 +101,7 @@ dateFloor interval date =
       Saturday    -> dateFromYMD y m (d + daysToPreviousDayOfWeek Sat date)
       Sunday      -> dateFromYMD y m (d + daysToPreviousDayOfWeek Sun date)
 
+
 dateAddMonths : Int -> Date -> Date
 dateAddMonths n date =
   let
@@ -97,6 +111,7 @@ dateAddMonths n date =
     m' = om % 12 + 1 |> monthFromMonthNumber
   in
     dateFromSpec y' m' d hh mm ss ms
+
 
 dateAdd : Interval -> Int -> Date -> Date
 dateAdd interval n date =
@@ -121,12 +136,14 @@ dateAdd interval n date =
       Saturday    -> dateFromSpec y m (d + n * 7 + daysToPreviousDayOfWeek Sat date) hh mm ss ms
       Sunday      -> dateFromSpec y m (d + n * 7 + daysToPreviousDayOfWeek Sun date) hh mm ss ms
 
+
 dateCeil : Interval -> Date -> Date
 dateCeil interval date =
   let
     floored = dateFloor interval date
   in
     if toTime date == toTime floored then date else dateAdd interval 1 floored
+
 
 dateDiffMonth : Date -> Date -> Int
 dateDiffMonth date1 date2 =
@@ -141,6 +158,7 @@ dateDiffMonth date1 date2 =
   in
     ordinalMonth' date2 - ordinalMonth' date1 |> truncate
 
+
 dateDiff : Interval -> Date -> Date -> Int
 dateDiff interval date1 date2 =
   let
@@ -151,12 +169,13 @@ dateDiff interval date1 date2 =
       Second      -> diffMS // 1000
       Minute      -> diffMS // 60000
       Hour        -> diffMS // 3600000
-      Day         -> rataDie date2 - rataDie date1 |> truncate
+      Day         -> toRataDie date2 - toRataDie date1 |> truncate
       Month       -> dateDiffMonth date1 date2
       Year        -> dateDiffMonth date1 date2 // 12
       Quarter     -> dateDiffMonth date1 date2 // 3
       Week        -> dateDiff Day date1 date2 // 7
       weekday     -> dateDiff Day (dateFloor weekday date1) (dateFloor weekday date2) // 7
+
 
 dateRange : Interval -> Int -> Date -> Date -> List Date
 dateRange interval step start end =
