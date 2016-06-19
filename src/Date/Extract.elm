@@ -1,6 +1,7 @@
 module Date.Extract exposing (
   monthNumber,
   quarter,
+  ordinalDay,
   isoWeekday,
   isoYear,
   isoWeek,
@@ -8,7 +9,7 @@ module Date.Extract exposing (
   )
 
 import Date exposing (Date, Month(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import Date.Fact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, msPerMinute)
+import Date.Fact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute)
 import Date.Internal exposing (unixTimeFromSpec, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie)
 
 
@@ -20,6 +21,11 @@ monthNumber date =
 quarter : Date -> Int
 quarter date =
   monthNumber date |> toFloat |> (\n -> n / 3) |> ceiling
+
+
+ordinalDay : Date -> Int
+ordinalDay date =
+  daysBeforeStartOfMonth (year date) (month date) + day date
 
 
 isoWeekday : Date -> Int

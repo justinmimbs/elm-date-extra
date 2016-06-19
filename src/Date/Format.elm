@@ -1,7 +1,7 @@
 module Date.Format exposing (toStringWithFormat)
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Date.Extract exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, timezoneOffset)
+import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, timezoneOffset)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
 
@@ -69,7 +69,7 @@ formatTimezoneOffset separator minutes =
 
 tokens : Regex
 tokens =
-  regex "yy(?:yy)?|m{1,4}|d{1,4}|([wHhMsAa])\\1?|[SqNolOP]|\\[.*?\\]"
+  regex "yy(?:yy)?|m{1,4}|d{1,4}|D(?:DD)?|([wHhMsAa])\\1?|[SqNolOP]|\\[.*?\\]"
 
 
 f : Date -> String -> String
@@ -86,6 +86,8 @@ f date token =
     "ddd"  -> dayOfWeek date |> dayOfWeekName |> slice 0 3
     "dd"   -> day date |> toString |> padLeft 2 '0'
     "d"    -> day date |> toString
+    "D"    -> ordinalDay date |> toString
+    "DDD"  -> ordinalDay date |> toString |> padLeft 3 '0'
     "S"    -> day date |> ordinalSuffix
     "q"    -> quarter date |> toString
     "o"    -> isoYear date |> toString
