@@ -1,4 +1,9 @@
-module Date.Create exposing (..)
+module Date.Create exposing (
+  Timezone(..),
+  fromTimezoneSpec,
+  fromSpec,
+  fromYMD
+  )
 
 import Date exposing (Date, Month)
 import Date.Fact exposing (msPerMinute)
@@ -11,8 +16,8 @@ type Timezone
   | Local
 
 
-dateFromTimezoneSpec : Timezone -> Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
-dateFromTimezoneSpec tz y m d hh mm ss ms =
+fromTimezoneSpec : Timezone -> Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
+fromTimezoneSpec tz y m d hh mm ss ms =
   let
     unixTime = unixTimeFromSpec y m d hh mm ss ms
   in
@@ -25,16 +30,16 @@ dateFromTimezoneSpec tz y m d hh mm ss ms =
 
       Local ->
         let
-          date = dateFromTimezoneSpec UTC y m d hh mm ss ms
+          date = fromTimezoneSpec UTC y m d hh mm ss ms
         in
           Date.fromTime <| toFloat <| unixTime + (timezoneOffset date * msPerMinute)
 
 
-dateFromSpec : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
-dateFromSpec =
-  dateFromTimezoneSpec Local
+fromSpec : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
+fromSpec =
+  fromTimezoneSpec Local
 
 
-dateFromYMD : Int -> Month -> Int -> Date
-dateFromYMD y m d =
-  dateFromSpec y m d 0 0 0 0
+fromYMD : Int -> Month -> Int -> Date
+fromYMD y m d =
+  fromSpec y m d 0 0 0 0

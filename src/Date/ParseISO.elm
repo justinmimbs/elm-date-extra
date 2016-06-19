@@ -1,10 +1,12 @@
-module Date.ParseISO exposing (..)
+module Date.ParseISO exposing (
+  fromISOString
+  )
 
 import Regex exposing (Regex, HowMany(AtMost), regex)
 import String
 import Date exposing (Date, Month)
 import Date.Fact exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
-import Date.Create exposing (Timezone(..), dateFromTimezoneSpec)
+import Date.Create exposing (Timezone(..), fromTimezoneSpec)
 
 
 (>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -46,13 +48,13 @@ isoDateRegex =
     regex (date ++ time)
 
 
-dateFromISOString : String -> Maybe Date
-dateFromISOString s =
-  (Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches) >>= dateFromISOMatches
+fromISOString : String -> Maybe Date
+fromISOString s =
+  (Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches) >>= fromISOMatches
 
 
-dateFromISOMatches : List (Maybe String) -> Maybe Date
-dateFromISOMatches matches =
+fromISOMatches : List (Maybe String) -> Maybe Date
+fromISOMatches matches =
   case matches of
     [dateY, _, dateM, dateD, timeH, _, timeM, timeS, timeF, tzZ, tzSign, tzH, tzM] ->
       let
@@ -62,7 +64,7 @@ dateFromISOMatches matches =
         ms = timeFromMatches timeH timeM timeS timeF
         tz = timezoneFromMatches tzZ tzSign tzH tzM
       in
-        Just <| dateFromTimezoneSpec tz y m d 0 0 0 ms
+        Just <| fromTimezoneSpec tz y m d 0 0 0 ms
 
     _ ->
       Nothing

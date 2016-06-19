@@ -2,7 +2,7 @@ module Test.Extract exposing (..)
 
 import Date exposing (Date, Month(..))
 import Date.Extract exposing (isoYear, isoWeek, isoWeekday, quarter)
-import Date.Create exposing (dateFromYMD)
+import Date.Create exposing (fromYMD)
 import Test.Internal exposing (everyYMDInMonth)
 
 import ElmTest exposing (Test, suite, test, equals, assert)
@@ -10,7 +10,7 @@ import ElmTest exposing (Test, suite, test, equals, assert)
 
 everyDateInMonth : Int -> Month -> List Date
 everyDateInMonth y m =
-  everyYMDInMonth y m |> List.map (\(y, m, d) -> dateFromYMD y m d)
+  everyYMDInMonth y m |> List.map (\(y, m, d) -> fromYMD y m d)
 
 
 {-| isoYear, isoWeek, isoWeekday return expected results.
@@ -25,7 +25,7 @@ isoWeekDateTests =
 
     isoWeekDateFromYMD : Int -> Month -> Int -> (Int, Int, Int)
     isoWeekDateFromYMD y m d =
-      isoWeekDateFromDate <| dateFromYMD y m d
+      isoWeekDateFromDate <| fromYMD y m d
   in
     suite "isoYear, isoWeek, isoWeekday" [
       equals (isoWeekDateFromYMD 2005 Jan  1) (2004, 53, 6),

@@ -1,4 +1,6 @@
-module Date.Format exposing (toStringWithFormat)
+module Date.Format exposing (
+  toStringWithFormat
+  )
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
 import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, timezoneOffset)
