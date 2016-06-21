@@ -3,7 +3,8 @@ module Date.Internal exposing (
   rataDieFromYMD,
   ymdFromRataDie,
   yearFromRataDie,
-  isoWeekdayFromRataDie
+  isoWeekdayFromRataDie,
+  msFromTimeParts
   )
 
 import Date exposing (Month(..))
@@ -41,6 +42,7 @@ rataDieFromYMD y m d =
 (///) : Int -> Int -> (Int, Int)
 (///) n d =
   (n // d, n % d)
+
 infixl 7 ///
 
 
@@ -86,10 +88,15 @@ unixDaysFromYMD y m d =
   rataDieFromYMD y m d - unixEpochRD
 
 
+msFromTimeParts : Int -> Int -> Int -> Int -> Int
+msFromTimeParts hh mm ss ms =
+  ms
+  + msPerSecond * ss
+  + msPerMinute * mm
+  + msPerHour * hh
+
+
 unixTimeFromSpec : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Int
 unixTimeFromSpec y m d hh mm ss ms =
-  unixDaysFromYMD y m d * msPerDay
-    + hh * msPerHour
-    + mm * msPerMinute
-    + ss * msPerSecond
-    + ms
+  msPerDay * unixDaysFromYMD y m d
+  + msFromTimeParts hh mm ss ms

@@ -1,9 +1,9 @@
 module Date.Format exposing (
-  toStringWithFormat
+  toFormattedString
   )
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, timezoneOffset)
+import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, timeZoneOffset)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
 
@@ -110,12 +110,12 @@ f date token =
     "A"    -> if hour date < 12 then "A" else "P"
     "aa"   -> if hour date < 12 then "am" else "pm"
     "a"    -> if hour date < 12 then "a" else "p"
-    "O"    -> timezoneOffset date |> formatTimezoneOffset ""
-    "P"    -> timezoneOffset date |> formatTimezoneOffset ":"
+    "O"    -> timeZoneOffset date |> formatTimezoneOffset ""
+    "P"    -> timeZoneOffset date |> formatTimezoneOffset ":"
     -- escaped
     s      -> slice 1 -1 s
 
 
-toStringWithFormat : String -> Date -> String
-toStringWithFormat format date =
+toFormattedString : String -> Date -> String
+toFormattedString format date =
   replace All tokens (\{ match } -> f date match) format

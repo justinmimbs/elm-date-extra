@@ -6,7 +6,7 @@ import Regex exposing (Regex, HowMany(AtMost), regex)
 import String
 import Date exposing (Date, Month)
 import Date.Fact exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
-import Date.Create exposing (Timezone(..), fromTimezoneSpec)
+import Date.Create exposing (TimeZone(..), fromPartsWithTimeZone)
 
 
 (>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -62,9 +62,9 @@ fromISOMatches matches =
         m = (dateM >>= stringToInt) ? 1 |> monthFromMonthNumber
         d = (dateD >>= stringToInt) ? 1
         ms = timeFromMatches timeH timeM timeS timeF
-        tz = timezoneFromMatches tzZ tzSign tzH tzM
+        tz = timeZoneFromMatches tzZ tzSign tzH tzM
       in
-        Just <| fromTimezoneSpec tz y m d 0 0 0 ms
+        Just <| fromPartsWithTimeZone tz y m d 0 0 0 ms
 
     _ ->
       Nothing
@@ -87,8 +87,8 @@ timeFromMatches timeH timeM timeS timeF =
     |> round
 
 
-timezoneFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Timezone
-timezoneFromMatches tzZ tzSign tzH tzM =
+timeZoneFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> TimeZone
+timeZoneFromMatches tzZ tzSign tzH tzM =
   case (tzZ, tzSign) of
     (Just "Z", Nothing) ->
       UTC

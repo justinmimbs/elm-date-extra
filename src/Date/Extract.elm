@@ -2,15 +2,16 @@ module Date.Extract exposing (
   monthNumber,
   quarter,
   ordinalDay,
+  fractionalDay,
   isoWeekday,
   isoYear,
   isoWeek,
-  timezoneOffset
+  timeZoneOffset
   )
 
 import Date exposing (Date, Month(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import Date.Fact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute)
-import Date.Internal exposing (unixTimeFromSpec, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie)
+import Date.Fact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute, msPerDay)
+import Date.Internal exposing (unixTimeFromSpec, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie, msFromTimeParts)
 
 
 monthNumber : Date -> Int
@@ -26,6 +27,14 @@ quarter date =
 ordinalDay : Date -> Int
 ordinalDay date =
   daysBeforeStartOfMonth (year date) (month date) + day date
+
+
+fractionalDay : Date -> Float
+fractionalDay date =
+  let
+    timeOfDayMS = msFromTimeParts (hour date) (minute date) (second date) (millisecond date)
+  in
+    toFloat timeOfDayMS / toFloat msPerDay
 
 
 isoWeekday : Date -> Int
@@ -60,6 +69,6 @@ timezoneOffsetMS date =
     (Date.toTime date |> floor) - t
 
 
-timezoneOffset : Date -> Int
-timezoneOffset date =
+timeZoneOffset : Date -> Int
+timeZoneOffset date =
   timezoneOffsetMS date // msPerMinute
