@@ -58,7 +58,7 @@ isoWeek date =
     daysToMonday = 1 - (isoWeekdayFromRataDie jan4RD)
     week1Day1RD = jan4RD + daysToMonday
   in
-    rataDieFromYMD (year date) (month date) (day date) - week1Day1RD |> toFloat |> (\n -> n / 7) |> floor |> (+) 1
+    (rataDieFromYMD (year date) (month date) (day date) - week1Day1RD) // 7 + 1
 
 
 msOffsetFromUTC : Date -> Int
