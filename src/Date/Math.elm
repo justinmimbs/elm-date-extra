@@ -13,14 +13,13 @@ module Date.Math exposing (
   )
 
 import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Date.Fact exposing (monthFromMonthNumber, isoWeekdayFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
-import Date.Internal exposing (unixTimeFromSpec)
+import Date.Facts exposing (monthFromMonthNumber, isoWeekdayFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
 import Date.Extract exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, fractionalDay)
 import Date.Create exposing (fromParts, fromYMD)
 import Date.Convert exposing (toRataDieMoment)
 
 
--- Operations for dates as single values
+-- Operations treating a date as a single value
 
 equal : Date -> Date -> Bool
 equal a b =
@@ -52,7 +51,7 @@ clamp min max date =
     date
 
 
--- Operations for date parts
+-- Operations for working with date parts
 
 type Interval
   = Millisecond

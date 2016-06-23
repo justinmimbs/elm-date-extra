@@ -1,11 +1,11 @@
 module Test.Extract exposing (..)
 
+import ElmTest exposing (Test, suite, test, equals, assert)
+
 import Date exposing (Date, Month(..))
 import Date.Extract exposing (isoYear, isoWeek, isoWeekday, quarter)
 import Date.Create exposing (fromYMD)
-import Test.Internal exposing (everyYMDInMonth)
-
-import ElmTest exposing (Test, suite, test, equals, assert)
+import Test.Core exposing (everyYMDInMonth)
 
 
 everyDateInMonth : Int -> Month -> List Date

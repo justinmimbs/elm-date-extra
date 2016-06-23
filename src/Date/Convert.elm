@@ -1,9 +1,21 @@
-module Date.Convert exposing (..)
+module Date.Convert exposing (
+  toFormattedString,
+  toRataDie,
+  toRataDieMoment,
+  toJulianDate,
+  toJulianDayNumber
+  )
 
 import Date exposing (Date, toTime, year, month, day)
-import Date.Fact exposing (msPerDay)
-import Date.Internal exposing (rataDieFromYMD)
+import Date.Facts exposing (msPerDay)
 import Date.Extract exposing (fractionalDay)
+import Date.Internal.Core exposing (rataDieFromYMD)
+import Date.Internal.Format
+
+
+toFormattedString : String -> Date -> String
+toFormattedString =
+  Date.Internal.Format.toFormattedString
 
 
 toRataDie : Date -> Int

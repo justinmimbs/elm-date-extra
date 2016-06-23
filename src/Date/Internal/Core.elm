@@ -1,14 +1,14 @@
-module Date.Internal exposing (
-  unixTimeFromSpec,
+module Date.Internal.Core exposing (
   rataDieFromYMD,
   ymdFromRataDie,
   yearFromRataDie,
   isoWeekdayFromRataDie,
-  msFromTimeParts
+  msFromTimeParts,
+  unixTimeFromParts
   )
 
 import Date exposing (Month(..))
-import Date.Fact exposing (daysBeforeStartOfMonth, months, msPerSecond, msPerMinute, msPerHour, msPerDay)
+import Date.Facts exposing (daysBeforeStartOfMonth, months, msPerSecond, msPerMinute, msPerHour, msPerDay)
 
 
 find : (a -> Bool) -> List a -> Maybe a
@@ -96,7 +96,7 @@ msFromTimeParts hh mm ss ms =
   + msPerHour * hh
 
 
-unixTimeFromSpec : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Int
-unixTimeFromSpec y m d hh mm ss ms =
+unixTimeFromParts : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Int
+unixTimeFromParts y m d hh mm ss ms =
   msPerDay * unixDaysFromYMD y m d
   + msFromTimeParts hh mm ss ms

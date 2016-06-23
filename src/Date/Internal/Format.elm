@@ -1,9 +1,9 @@
-module Date.Format exposing (
+module Date.Internal.Format exposing (
   toFormattedString
   )
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, timeZoneOffset)
+import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, offsetFromUTC)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
 
@@ -59,12 +59,12 @@ ordinalSuffix n =
         _ -> ""
 
 
-formatTimezoneOffset : String -> Int -> String
-formatTimezoneOffset separator minutes =
+formatTimeZoneOffset : String -> Int -> String
+formatTimeZoneOffset separator minutes =
   let
     hh = abs minutes // 60 |> toString |> padLeft 2 '0'
     mm = abs minutes % 60 |> toString |> padLeft 2 '0'
-    sign = if minutes <= 0 then "+" else "-"
+    sign = if minutes >= 0 then "+" else "-"
   in
     sign ++ hh ++ separator ++ mm
 
@@ -110,8 +110,8 @@ f date token =
     "A"    -> if hour date < 12 then "A" else "P"
     "aa"   -> if hour date < 12 then "am" else "pm"
     "a"    -> if hour date < 12 then "a" else "p"
-    "O"    -> timeZoneOffset date |> formatTimezoneOffset ""
-    "P"    -> timeZoneOffset date |> formatTimezoneOffset ":"
+    "O"    -> offsetFromUTC date |> formatTimeZoneOffset ""
+    "P"    -> offsetFromUTC date |> formatTimeZoneOffset ":"
     -- escaped
     s      -> slice 1 -1 s
 

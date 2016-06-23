@@ -1,10 +1,10 @@
-module Test.Internal exposing (..)
-
-import Date exposing (Month)
-import Date.Fact exposing (daysInMonth, months)
-import Date.Internal exposing (rataDieFromYMD, ymdFromRataDie)
+module Test.Core exposing (..)
 
 import ElmTest exposing (Test, suite, defaultTest, assertionList)
+
+import Date exposing (Month)
+import Date.Facts exposing (daysInMonth, months)
+import Date.Internal.Core exposing (rataDieFromYMD, ymdFromRataDie)
 
 
 everyYMDInMonth : Int -> Month -> List (Int, Month, Int)

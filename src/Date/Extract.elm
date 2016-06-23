@@ -6,12 +6,12 @@ module Date.Extract exposing (
   isoWeekday,
   isoYear,
   isoWeek,
-  timeZoneOffset
+  offsetFromUTC
   )
 
-import Date exposing (Date, Month(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import Date.Fact exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute, msPerDay)
-import Date.Internal exposing (unixTimeFromSpec, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie, msFromTimeParts)
+import Date exposing (Date, Month(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
+import Date.Facts exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute, msPerDay)
+import Date.Internal.Core exposing (unixTimeFromParts, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie, msFromTimeParts)
 
 
 monthNumber : Date -> Int
@@ -61,14 +61,14 @@ isoWeek date =
     rataDieFromYMD (year date) (month date) (day date) - week1Day1RD |> toFloat |> (\n -> n / 7) |> floor |> (+) 1
 
 
-timezoneOffsetMS : Date -> Int
-timezoneOffsetMS date =
+msOffsetFromUTC : Date -> Int
+msOffsetFromUTC date =
   let
-    t = unixTimeFromSpec (year date) (month date) (day date) (hour date) (minute date) (second date) (millisecond date)
+    t = unixTimeFromParts (year date) (month date) (day date) (hour date) (minute date) (second date) (millisecond date)
   in
-    (Date.toTime date |> floor) - t
+    t - floor (toTime date)
 
 
-timeZoneOffset : Date -> Int
-timeZoneOffset date =
-  timezoneOffsetMS date // msPerMinute
+offsetFromUTC : Date -> Int
+offsetFromUTC date =
+  msOffsetFromUTC date // msPerMinute

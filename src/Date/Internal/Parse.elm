@@ -1,12 +1,12 @@
-module Date.ParseISO exposing (
-  fromISOString
+module Date.Internal.Parse exposing (
+  offsetTimeFromISOString
   )
 
 import Regex exposing (Regex, HowMany(AtMost), regex)
 import String
 import Date exposing (Date, Month)
-import Date.Fact exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
-import Date.Create exposing (TimeZone(..), fromPartsWithTimeZone)
+import Date.Facts exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
+import Date.Internal.Core exposing (unixTimeFromParts)
 
 
 (>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -48,30 +48,30 @@ isoDateRegex =
     regex (date ++ time)
 
 
-fromISOString : String -> Maybe Date
-fromISOString s =
-  (Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches) >>= fromISOMatches
+offsetTimeFromISOString : String -> Maybe (Maybe Int, Int)
+offsetTimeFromISOString s =
+  (Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches) >>= offsetTimeFromMatches
 
 
-fromISOMatches : List (Maybe String) -> Maybe Date
-fromISOMatches matches =
+offsetTimeFromMatches : List (Maybe String) -> Maybe (Maybe Int, Int)
+offsetTimeFromMatches matches =
   case matches of
     [dateY, _, dateM, dateD, timeH, _, timeM, timeS, timeF, tzZ, tzSign, tzH, tzM] ->
       let
         y = (dateY >>= stringToInt) ? 1
         m = (dateM >>= stringToInt) ? 1 |> monthFromMonthNumber
         d = (dateD >>= stringToInt) ? 1
-        ms = timeFromMatches timeH timeM timeS timeF
-        tz = timeZoneFromMatches tzZ tzSign tzH tzM
+        ms = msFromMatches timeH timeM timeS timeF
+        offset = offsetFromMatches tzZ tzSign tzH tzM
       in
-        Just <| fromPartsWithTimeZone tz y m d 0 0 0 ms
+        Just <| (offset, unixTimeFromParts y m d 0 0 0 ms)
 
     _ ->
       Nothing
 
 
-timeFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
-timeFromMatches timeH timeM timeS timeF =
+msFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
+msFromMatches timeH timeM timeS timeF =
   let
     f = (timeF >>= stringToFloat) ? 0.0
     (hh, mm, ss) =
@@ -87,18 +87,18 @@ timeFromMatches timeH timeM timeS timeF =
     |> round
 
 
-timeZoneFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> TimeZone
-timeZoneFromMatches tzZ tzSign tzH tzM =
+offsetFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Maybe Int
+offsetFromMatches tzZ tzSign tzH tzM =
   case (tzZ, tzSign) of
     (Just "Z", Nothing) ->
-      UTC
+      Just 0
 
     (Nothing, Just sign) ->
       let
         hh = (tzH >>= stringToInt) ? 0
         mm = (tzM >>= stringToInt) ? 0
       in
-        Offset <| (if sign == "+" then 1 else -1) * (hh * 60 + mm)
+        Just <| (if sign == "+" then 1 else -1) * (hh * 60 + mm)
 
     _ ->
-      Local
+      Nothing
