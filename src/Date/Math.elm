@@ -12,14 +12,13 @@ module Date.Math exposing (
   range
   )
 
-import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Date.Facts exposing (monthFromMonthNumber, isoWeekdayFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
-import Date.Extract exposing (monthNumber, quarter, isoYear, isoWeek, isoWeekday, fractionalDay)
-import Date.Create exposing (fromParts, fromYMD)
-import Date.Convert exposing (toRataDieMoment)
+import Date exposing (Date, Month(..), Day(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
+import Date.Facts exposing (monthFromMonthNumber, weekdayNumberFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
+import Date.Extract exposing (monthNumber, quarter, weekYear, weekNumber, weekdayNumber, fractionalDay)
+import Date.Create exposing (fromParts, fromCalendarDate)
 
 
--- Operations treating a date as a single value
+-- Operations for dates as singular values
 
 equal : Date -> Date -> Bool
 equal a b =
@@ -51,7 +50,7 @@ clamp min max date =
     date
 
 
--- Operations for working with date parts
+-- Operations for dates as composite values
 
 type Interval
   = Millisecond
@@ -83,7 +82,7 @@ equalBy interval date1 date2 =
     Month       -> month date1 == month date2 && equalBy Year date1 date2
     Year        -> year date1 == year date2
     Quarter     -> quarter date1 == quarter date2 && equalBy Year date1 date2
-    Week        -> isoWeek date1 == isoWeek date2 && isoYear date1 == isoYear date2
+    Week        -> weekNumber date1 == weekNumber date2 && weekYear date1 == weekYear date2
     weekday     -> equalBy Day (floor weekday date1) (floor weekday date2)
 
 
@@ -107,8 +106,8 @@ ordinalMonth date =
 
 -- conversions
 
-specFromDate : Date -> (Int, Month, Int, Int, Int, Int, Int)
-specFromDate date =
+toParts : Date -> (Int, Month, Int, Int, Int, Int, Int)
+toParts date =
   (year date, month date, day date, hour date, minute date, second date, millisecond date)
 
 
@@ -116,37 +115,37 @@ specFromDate date =
 
 daysToPreviousDayOfWeek : Day -> Date -> Int
 daysToPreviousDayOfWeek d date =
-  negate <| (isoWeekday date - isoWeekdayFromDayOfWeek d + 7) % 7
+  negate <| (weekdayNumber date - weekdayNumberFromDayOfWeek d + 7) % 7
 
 
 floor : Interval -> Date -> Date
 floor interval date =
   let
-    (y, m, d, hh, mm, ss, _) = specFromDate date
+    (y, m, d, hh, mm, ss, _) = toParts date
   in
     case interval of
       Millisecond -> date
       Second      -> fromParts y m d hh mm ss 0
       Minute      -> fromParts y m d hh mm 0 0
       Hour        -> fromParts y m d hh 0 0 0
-      Day         -> fromYMD y m d
-      Month       -> fromYMD y m 1
-      Year        -> fromYMD y Jan 1
-      Quarter     -> fromYMD y (monthFromQuarter <| quarter date) 1
-      Week        -> fromYMD y m (d + daysToPreviousDayOfWeek Mon date)
-      Monday      -> fromYMD y m (d + daysToPreviousDayOfWeek Mon date)
-      Tuesday     -> fromYMD y m (d + daysToPreviousDayOfWeek Tue date)
-      Wednesday   -> fromYMD y m (d + daysToPreviousDayOfWeek Wed date)
-      Thursday    -> fromYMD y m (d + daysToPreviousDayOfWeek Thu date)
-      Friday      -> fromYMD y m (d + daysToPreviousDayOfWeek Fri date)
-      Saturday    -> fromYMD y m (d + daysToPreviousDayOfWeek Sat date)
-      Sunday      -> fromYMD y m (d + daysToPreviousDayOfWeek Sun date)
+      Day         -> fromCalendarDate y m d
+      Month       -> fromCalendarDate y m 1
+      Year        -> fromCalendarDate y Jan 1
+      Quarter     -> fromCalendarDate y (monthFromQuarter <| quarter date) 1
+      Week        -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Mon date)
+      Monday      -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Mon date)
+      Tuesday     -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Tue date)
+      Wednesday   -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Wed date)
+      Thursday    -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Thu date)
+      Friday      -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Fri date)
+      Saturday    -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Sat date)
+      Sunday      -> fromCalendarDate y m (d + daysToPreviousDayOfWeek Sun date)
 
 
 addMonths : Int -> Date -> Date
 addMonths n date =
   let
-    (y, m, d, hh, mm, ss, ms) = specFromDate date
+    (y, m, d, hh, mm, ss, ms) = toParts date
     om = ordinalMonth date + n + -1
     y' = om // 12
     m' = om % 12 + 1 |> monthFromMonthNumber
@@ -157,7 +156,7 @@ addMonths n date =
 add : Interval -> Int -> Date -> Date
 add interval n date =
   let
-    (y, m, d, hh, mm, ss, ms) = specFromDate date
+    (y, m, d, hh, mm, ss, ms) = toParts date
   in
     case interval of
       Millisecond -> fromParts y m d hh mm ss (ms + n)
@@ -189,13 +188,13 @@ ceiling interval date =
 diffMonth : Date -> Date -> Int
 diffMonth date1 date2 =
   let
-    fractionOfMonth : Date -> Float
-    fractionOfMonth date =
+    fractionalMonth : Date -> Float
+    fractionalMonth date =
       ((day date - 1 |> toFloat) + fractionalDay date) / 31
 
     ordinalMonth' : Date -> Float
     ordinalMonth' date =
-      (ordinalMonth date |> toFloat) + fractionOfMonth date
+      (ordinalMonth date |> toFloat) + fractionalMonth date
   in
     ordinalMonth' date2 - ordinalMonth' date1 |> truncate
 
@@ -210,7 +209,7 @@ diff interval date1 date2 =
       Second      -> diffMS // msPerSecond
       Minute      -> diffMS // msPerMinute
       Hour        -> diffMS // msPerHour
-      Day         -> toRataDieMoment date2 - toRataDieMoment date1 |> truncate
+      Day         -> diffMS // msPerDay
       Month       -> diffMonth date1 date2
       Year        -> diffMonth date1 date2 // 12
       Quarter     -> diffMonth date1 date2 // 3

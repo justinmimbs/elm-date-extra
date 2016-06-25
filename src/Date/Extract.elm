@@ -3,15 +3,16 @@ module Date.Extract exposing (
   quarter,
   ordinalDay,
   fractionalDay,
-  isoWeekday,
-  isoYear,
-  isoWeek,
-  offsetFromUTC
+  weekdayNumber,
+  weekNumber,
+  weekYear,
+  offsetFromUtc,
+  msOffsetFromUtc
   )
 
 import Date exposing (Date, Month(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import Date.Facts exposing (monthNumberFromMonth, isoWeekdayFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute, msPerDay)
-import Date.Internal.Core exposing (unixTimeFromParts, rataDieFromYMD, yearFromRataDie, isoWeekdayFromRataDie, msFromTimeParts)
+import Date.Facts exposing (monthNumberFromMonth, weekdayNumberFromDayOfWeek, daysBeforeStartOfMonth, msPerMinute, msPerDay)
+import Date.Internal.Core exposing (unixTimeFromParts, weekYearFromCalendarDate, weekNumberFromCalendarDate, msFromTimeParts)
 
 
 monthNumber : Date -> Int
@@ -37,38 +38,30 @@ fractionalDay date =
     toFloat timeOfDayMS / toFloat msPerDay
 
 
-isoWeekday : Date -> Int
-isoWeekday date =
-  isoWeekdayFromDayOfWeek <| dayOfWeek date
+weekYear : Date -> Int
+weekYear date =
+  weekYearFromCalendarDate (year date) (month date) (day date)
 
 
-isoYear : Date -> Int
-isoYear date =
+weekNumber : Date -> Int
+weekNumber date =
+  weekNumberFromCalendarDate (year date) (month date) (day date)
+
+
+weekdayNumber : Date -> Int
+weekdayNumber date =
+  weekdayNumberFromDayOfWeek <| dayOfWeek date
+
+
+msOffsetFromUtc : Date -> Int
+msOffsetFromUtc date =
   let
-    daysToThursday = 4 - isoWeekday date
-    thursdayRD = rataDieFromYMD (year date) (month date) (day date) + daysToThursday
+    localTime = toFloat <| unixTimeFromParts (year date) (month date) (day date) (hour date) (minute date) (second date) (millisecond date)
+    utcTime = toTime date
   in
-    yearFromRataDie thursdayRD
+    localTime - utcTime |> floor
 
 
-isoWeek : Date -> Int
-isoWeek date =
-  let
-    jan4RD = rataDieFromYMD (isoYear date) Jan 4
-    daysToMonday = 1 - (isoWeekdayFromRataDie jan4RD)
-    week1Day1RD = jan4RD + daysToMonday
-  in
-    (rataDieFromYMD (year date) (month date) (day date) - week1Day1RD) // 7 + 1
-
-
-msOffsetFromUTC : Date -> Int
-msOffsetFromUTC date =
-  let
-    t = unixTimeFromParts (year date) (month date) (day date) (hour date) (minute date) (second date) (millisecond date)
-  in
-    t - floor (toTime date)
-
-
-offsetFromUTC : Date -> Int
-offsetFromUTC date =
-  msOffsetFromUTC date // msPerMinute
+offsetFromUtc : Date -> Int
+offsetFromUtc date =
+  msOffsetFromUtc date // msPerMinute

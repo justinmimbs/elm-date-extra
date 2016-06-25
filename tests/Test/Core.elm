@@ -4,7 +4,7 @@ import ElmTest exposing (Test, suite, defaultTest, assertionList)
 
 import Date exposing (Month)
 import Date.Facts exposing (daysInMonth, months)
-import Date.Internal.Core exposing (rataDieFromYMD, ymdFromRataDie)
+import Date.Internal.Core exposing (rataDieFromCalendarDate, calendarDateFromRataDie)
 
 
 everyYMDInMonth : Int -> Month -> List (Int, Month, Int)
@@ -31,7 +31,7 @@ rataDieTests =
 
     ymdFromRataDieFromYMD : (Int, Month, Int) -> (Int, Month, Int)
     ymdFromRataDieFromYMD (y, m, d) =
-      ymdFromRataDie <| rataDieFromYMD y m d
+      calendarDateFromRataDie <| rataDieFromCalendarDate y m d
   in
     suite "RataDie" <|
       List.map defaultTest <| assertionList ymdList <| List.map ymdFromRataDieFromYMD ymdList
@@ -39,6 +39,6 @@ rataDieTests =
 
 tests : Test
 tests =
-  suite "DateInternal" [
+  suite "Internal.Core" [
     rataDieTests
   ]

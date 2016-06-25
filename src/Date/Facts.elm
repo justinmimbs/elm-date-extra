@@ -81,8 +81,8 @@ monthFromMonthNumber n =
     _  -> Dec
 
 
-isoWeekdayFromDayOfWeek : Day -> Int
-isoWeekdayFromDayOfWeek d =
+weekdayNumberFromDayOfWeek : Day -> Int
+weekdayNumberFromDayOfWeek d =
   case d of
     Mon -> 1
     Tue -> 2
@@ -93,8 +93,8 @@ isoWeekdayFromDayOfWeek d =
     Sun -> 7
 
 
-dayOfWeekFromIsoWeekday : Int -> Day
-dayOfWeekFromIsoWeekday n =
+dayOfWeekFromWeekdayNumber : Int -> Day
+dayOfWeekFromWeekdayNumber n =
   case n of
     1 -> Mon
     2 -> Tue
@@ -103,6 +103,7 @@ dayOfWeekFromIsoWeekday n =
     5 -> Fri
     6 -> Sat
     _ -> Sun
+
 
 msPerSecond : Int
 msPerSecond =

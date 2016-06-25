@@ -3,7 +3,7 @@ module Date.Internal.Format exposing (
   )
 
 import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
-import Date.Extract exposing (monthNumber, quarter, ordinalDay, isoYear, isoWeek, isoWeekday, offsetFromUTC)
+import Date.Extract exposing (monthNumber, quarter, ordinalDay, weekYear, weekNumber, weekdayNumber, offsetFromUtc)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
 
@@ -92,10 +92,10 @@ f date token =
     "DDD"  -> ordinalDay date |> toString |> padLeft 3 '0'
     "S"    -> day date |> ordinalSuffix
     "q"    -> quarter date |> toString
-    "o"    -> isoYear date |> toString
-    "ww"   -> isoWeek date |> toString |> padLeft 2 '0'
-    "w"    -> isoWeek date |> toString
-    "N"    -> isoWeekday date |> toString
+    "o"    -> weekYear date |> toString
+    "ww"   -> weekNumber date |> toString |> padLeft 2 '0'
+    "w"    -> weekNumber date |> toString
+    "N"    -> weekdayNumber date |> toString
     -- time
     "HH"   -> hour date |> toString |> padLeft 2 '0'
     "H"    -> hour date |> toString
@@ -110,8 +110,8 @@ f date token =
     "A"    -> if hour date < 12 then "A" else "P"
     "aa"   -> if hour date < 12 then "am" else "pm"
     "a"    -> if hour date < 12 then "a" else "p"
-    "O"    -> offsetFromUTC date |> formatTimeZoneOffset ""
-    "P"    -> offsetFromUTC date |> formatTimeZoneOffset ":"
+    "O"    -> offsetFromUtc date |> formatTimeZoneOffset ""
+    "P"    -> offsetFromUtc date |> formatTimeZoneOffset ":"
     -- escaped
     s      -> slice 1 -1 s
 

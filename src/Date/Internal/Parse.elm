@@ -1,5 +1,5 @@
 module Date.Internal.Parse exposing (
-  offsetTimeFromISOString
+  offsetTimeFromIsoString
   )
 
 import Regex exposing (Regex, HowMany(AtMost), regex)
@@ -48,8 +48,8 @@ isoDateRegex =
     regex (date ++ time)
 
 
-offsetTimeFromISOString : String -> Maybe (Maybe Int, Int)
-offsetTimeFromISOString s =
+offsetTimeFromIsoString : String -> Maybe (Maybe Int, Int)
+offsetTimeFromIsoString s =
   (Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches) >>= offsetTimeFromMatches
 
 
