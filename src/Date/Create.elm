@@ -1,11 +1,11 @@
 module Date.Create exposing (
+  fromParts,
+  fromCalendarDate,
+  fromIsoString,
   TimeZone, utc, offset, local,
   TimeSpec, noTime, timeAt,
   DateSpec, calendarDate, ordinalDate, weekDate,
   fromSpec,
-  fromParts,
-  fromCalendarDate,
-  fromIsoString,
   fromJulianDate
   )
 
@@ -14,6 +14,39 @@ import Date.Facts exposing (msPerMinute, msPerDay)
 import Date.Extract exposing (offsetFromUtc)
 import Date.Internal.Core exposing (unixTimeFromParts, unixTimeFromCalendarDate, unixTimeFromWeekDate, msFromTimeParts)
 import Date.Internal.Parse exposing (offsetTimeFromIsoString)
+
+
+fromTime : Int -> Date
+fromTime =
+  Date.fromTime << toFloat
+
+
+fromOffsetTime : (Maybe Int, Int) -> Date
+fromOffsetTime (offset, time) =
+  case offset of
+    Just minutes ->
+      fromTime <| time - msPerMinute * minutes
+
+    Nothing ->
+      let
+        localOffset = offsetFromUtc <| fromTime time
+      in
+        fromTime <| time - msPerMinute * localOffset
+
+
+fromParts : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
+fromParts y m d hh mm ss ms =
+  fromOffsetTime (Nothing, unixTimeFromParts y m d hh mm ss ms)
+
+
+fromCalendarDate : Int -> Month -> Int -> Date
+fromCalendarDate y m d =
+  fromOffsetTime (Nothing, unixTimeFromCalendarDate y m d)
+
+
+fromIsoString : String -> Maybe Date
+fromIsoString s =
+  Maybe.map fromOffsetTime <| offsetTimeFromIsoString s
 
 
 type TimeZone
@@ -65,39 +98,6 @@ ordinalDate y d =
 weekDate : Int -> Int -> Int -> DateSpec
 weekDate y w d =
   DateMS <| unixTimeFromWeekDate y w d
-
-
-fromTime : Int -> Date
-fromTime =
-  Date.fromTime << toFloat
-
-
-fromOffsetTime : (Maybe Int, Int) -> Date
-fromOffsetTime (offset, time) =
-  case offset of
-    Just minutes ->
-      fromTime <| time - msPerMinute * minutes
-
-    Nothing ->
-      let
-        localOffset = offsetFromUtc <| fromTime time
-      in
-        fromTime <| time - msPerMinute * localOffset
-
-
-fromParts : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
-fromParts y m d hh mm ss ms =
-  fromOffsetTime (Nothing, unixTimeFromParts y m d hh mm ss ms)
-
-
-fromCalendarDate : Int -> Month -> Int -> Date
-fromCalendarDate y m d =
-  fromOffsetTime (Nothing, unixTimeFromCalendarDate y m d)
-
-
-fromIsoString : String -> Maybe Date
-fromIsoString s =
-  Maybe.map fromOffsetTime <| offsetTimeFromIsoString s
 
 
 fromSpec : TimeZone -> TimeSpec -> DateSpec -> Date

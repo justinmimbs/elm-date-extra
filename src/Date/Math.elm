@@ -1,9 +1,9 @@
 module Date.Math exposing (
-  Interval(..),
   equal,
   compare,
   isBetween,
   clamp,
+  Interval(..),
   equalBy,
   floor,
   ceiling,
