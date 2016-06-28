@@ -1,77 +1,123 @@
-module Test.Extract exposing (..)
+module Test.Extract exposing (tests)
 
 import ElmTest exposing (Test, suite, test, equals, assert)
 
+import Test.Utilities exposing (calendarDatesInMonth)
 import Date exposing (Date, Month(..))
-import Date.Extract exposing (weekYear, weekNumber, weekdayNumber, quarter)
-import Date.Create exposing (fromYMD)
-import Test.Core exposing (everyYMDInMonth)
+import Date.Facts exposing (months)
+import Date.Create as Date
+import Date.Extract exposing (monthNumber, quarter, ordinalDay, fractionalDay, weekYear, weekNumber, weekdayNumber)
 
 
-everyDateInMonth : Int -> Month -> List Date
-everyDateInMonth y m =
-  everyYMDInMonth y m |> List.map (\(y, m, d) -> fromYMD y m d)
+datesInMonth : Int -> Month -> List Date
+datesInMonth y m =
+  calendarDatesInMonth y m |> List.map (\(y, m, d) -> Date.fromCalendarDate y m d)
 
 
-{-| weekYear, weekNumber, weekdayNumber return expected results.
--}
+datesInYear : Int -> List Date
+datesInYear y =
+  List.concatMap (datesInMonth y) months
+
+
+monthNumberTests : Test
+monthNumberTests =
+  suite "monthNumber" [
+    test  "1" <| assert <| List.all ((==)  1) <| List.map monthNumber <| datesInMonth 2016 Jan,
+    test  "2" <| assert <| List.all ((==)  2) <| List.map monthNumber <| datesInMonth 2016 Feb,
+    test  "3" <| assert <| List.all ((==)  3) <| List.map monthNumber <| datesInMonth 2016 Mar,
+    test  "4" <| assert <| List.all ((==)  4) <| List.map monthNumber <| datesInMonth 2016 Apr,
+    test  "5" <| assert <| List.all ((==)  5) <| List.map monthNumber <| datesInMonth 2016 May,
+    test  "6" <| assert <| List.all ((==)  6) <| List.map monthNumber <| datesInMonth 2016 Jun,
+    test  "7" <| assert <| List.all ((==)  7) <| List.map monthNumber <| datesInMonth 2016 Jul,
+    test  "8" <| assert <| List.all ((==)  8) <| List.map monthNumber <| datesInMonth 2016 Aug,
+    test  "9" <| assert <| List.all ((==)  9) <| List.map monthNumber <| datesInMonth 2016 Sep,
+    test "10" <| assert <| List.all ((==) 10) <| List.map monthNumber <| datesInMonth 2016 Oct,
+    test "11" <| assert <| List.all ((==) 11) <| List.map monthNumber <| datesInMonth 2016 Nov,
+    test "12" <| assert <| List.all ((==) 12) <| List.map monthNumber <| datesInMonth 2016 Dec
+  ]
+
+
+quarterTests : Test
+quarterTests =
+  suite "quarter" [
+    test "1" <| assert <| List.all ((==) 1) <| List.map quarter <| List.concatMap (datesInMonth 2016) [Jan, Feb, Mar],
+    test "2" <| assert <| List.all ((==) 2) <| List.map quarter <| List.concatMap (datesInMonth 2016) [Apr, May, Jun],
+    test "3" <| assert <| List.all ((==) 3) <| List.map quarter <| List.concatMap (datesInMonth 2016) [Jul, Aug, Sep],
+    test "4" <| assert <| List.all ((==) 4) <| List.map quarter <| List.concatMap (datesInMonth 2016) [Oct, Nov, Dec]
+  ]
+
+
+ordinalDayTests : Test
+ordinalDayTests =
+  let
+    ordinalDayTest : Int -> Date -> Test
+    ordinalDayTest i date =
+      equals (ordinalDay date) (i + 1)
+  
+  in
+    suite "ordinalDay" [
+      suite "leap year"
+        <| List.indexedMap ordinalDayTest (datesInYear 2016),
+      suite "non-leap year"
+        <| List.indexedMap ordinalDayTest (datesInYear 2017)
+    ]
+
+
+fractionalDayTests : Test
+fractionalDayTests =
+  suite "fractionalDay" [
+    equals (fractionalDay <| Date.fromParts 2001 Jan 1  0 0 0 0) 0.0,
+    equals (fractionalDay <| Date.fromParts 2001 Jan 1  6 0 0 0) 0.25,
+    equals (fractionalDay <| Date.fromParts 2001 Jan 1 12 0 0 0) 0.5,
+    equals (fractionalDay <| Date.fromParts 2001 Jan 1 18 0 0 0) 0.75,
+    equals (fractionalDay <| Date.fromParts 2001 Jan 1  1 1 1 1) (3661001 / 86400000)
+  ]
+
+
+calendarDateToWeekDatePairs = [
+  ((2005, Jan,  1), (2004, 53, 6)),
+  ((2005, Jan,  2), (2004, 53, 7)),
+  ((2005, Dec, 31), (2005, 52, 6)),
+  ((2007, Jan,  1), (2007,  1, 1)),
+  ((2007, Dec, 30), (2007, 52, 7)),
+  ((2007, Dec, 31), (2008,  1, 1)),
+  ((2008, Jan,  1), (2008,  1, 2)),
+  ((2008, Dec, 28), (2008, 52, 7)),
+  ((2008, Dec, 29), (2009,  1, 1)),
+  ((2008, Dec, 30), (2009,  1, 2)),
+  ((2008, Dec, 31), (2009,  1, 3)),
+  ((2009, Jan,  1), (2009,  1, 4)),
+  ((2009, Dec, 31), (2009, 53, 4)),
+  ((2010, Jan,  1), (2009, 53, 5)),
+  ((2010, Jan,  2), (2009, 53, 6)),
+  ((2010, Jan,  3), (2009, 53, 7))
+  ]
+
 
 weekDateTests : Test
 weekDateTests =
   let
-    weekDateFromDate : Date -> (Int, Int, Int)
-    weekDateFromDate date =
+    toWeekDate : Date -> (Int, Int, Int)
+    toWeekDate date =
       (weekYear date, weekNumber date, weekdayNumber date)
 
-    weekDateFromYMD : Int -> Month -> Int -> (Int, Int, Int)
-    weekDateFromYMD y m d =
-      weekDateFromDate <| fromYMD y m d
+    weekDateTest : (Int, Month, Int) -> (Int, Int, Int) -> Test
+    weekDateTest (y, m, d) weekDate =
+      equals (toWeekDate <| Date.fromCalendarDate y m d) weekDate
+
   in
-    suite "weekYear, weekNumber, weekdayNumber" [
-      equals (weekDateFromYMD 2005 Jan  1) (2004, 53, 6),
-      equals (weekDateFromYMD 2005 Jan  2) (2004, 53, 7),
-      equals (weekDateFromYMD 2005 Dec 31) (2005, 52, 6),
-      equals (weekDateFromYMD 2007 Jan  1) (2007,  1, 1),
-      equals (weekDateFromYMD 2007 Dec 30) (2007, 52, 7),
-      equals (weekDateFromYMD 2007 Dec 31) (2008,  1, 1),
-      equals (weekDateFromYMD 2008 Jan  1) (2008,  1, 2),
-      equals (weekDateFromYMD 2008 Dec 28) (2008, 52, 7),
-      equals (weekDateFromYMD 2008 Dec 29) (2009,  1, 1),
-      equals (weekDateFromYMD 2008 Dec 30) (2009,  1, 2),
-      equals (weekDateFromYMD 2008 Dec 31) (2009,  1, 3),
-      equals (weekDateFromYMD 2009 Jan  1) (2009,  1, 4),
-      equals (weekDateFromYMD 2009 Dec 31) (2009, 53, 4),
-      equals (weekDateFromYMD 2010 Jan  1) (2009, 53, 5),
-      equals (weekDateFromYMD 2010 Jan  2) (2009, 53, 6),
-      equals (weekDateFromYMD 2010 Jan  3) (2009, 53, 7)
-    ]
-
-
-{-| quarter returns expected results.
--}
-
-quarterTests : Test
-quarterTests =
-  let
-    everyDateInMonths : Int -> List Month -> List Date
-    everyDateInMonths y ms =
-      List.concatMap (everyDateInMonth y) ms
-  in
-    suite "quarter" [
-      test "Q1" <| assert
-        <| (everyDateInMonths 2016 [Jan, Feb, Mar] |> List.map quarter |> List.all ((==) 1)),
-      test "Q2" <| assert
-        <| (everyDateInMonths 2016 [Apr, May, Jun] |> List.map quarter |> List.all ((==) 2)),
-      test "Q3" <| assert
-        <| (everyDateInMonths 2016 [Jul, Aug, Sep] |> List.map quarter |> List.all ((==) 3)),
-      test "Q4" <| assert
-        <| (everyDateInMonths 2016 [Oct, Nov, Dec] |> List.map quarter |> List.all ((==) 4))
-    ]
+    suite "weekYear, weekNumber, weekdayNumber" <|
+      List.map (\(calendarDate, weekDate) ->
+        weekDateTest calendarDate weekDate
+      ) calendarDateToWeekDatePairs
 
 
 tests : Test
 tests =
   suite "Extract" [
-    weekDateTests,
-    quarterTests
+    monthNumberTests,
+    quarterTests,
+    ordinalDayTests,
+    fractionalDayTests,
+    weekDateTests
   ]

@@ -1,6 +1,6 @@
-module Test exposing (..)
+module Test exposing (main)
 
-import Test.Core as Core
+import Test.Create as Create
 import Test.Extract as Extract
 
 import ElmTest exposing (Test, suite, runSuiteHtml)
@@ -9,7 +9,7 @@ import ElmTest exposing (Test, suite, runSuiteHtml)
 tests : Test
 tests =
   suite "Date" [
-    Core.tests,
+    Create.tests,
     Extract.tests
   ]
 
