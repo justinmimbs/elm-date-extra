@@ -2,7 +2,8 @@ module Date.Internal.Format exposing (
   toFormattedString
   )
 
-import Date exposing (Date, year, month, day, hour, minute, second, millisecond, Month(..), Day(..), dayOfWeek)
+import Date exposing (Date, Month(..), Day(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
+import Date.Facts exposing (msPerMinute)
 import Date.Extract exposing (monthNumber, quarter, ordinalDay, weekYear, weekNumber, weekdayNumber, offsetFromUtc)
 import String exposing (slice, padLeft)
 import Regex exposing (Regex, regex, replace, HowMany(..))
@@ -74,8 +75,8 @@ tokens =
   regex "yy(?:yy)?|m{1,4}|d{1,4}|D(?:DD)?|([wHhMsAa])\\1?|[SqNolOP]|\\[.*?\\]"
 
 
-f : Date -> String -> String
-f date token =
+f : Bool -> Date -> String -> String
+f asUtc date token =
   case token of
     -- date
     "yyyy" -> year date |> toString
@@ -110,12 +111,20 @@ f date token =
     "A"    -> if hour date < 12 then "A" else "P"
     "aa"   -> if hour date < 12 then "am" else "pm"
     "a"    -> if hour date < 12 then "a" else "p"
-    "O"    -> offsetFromUtc date |> formatTimeZoneOffset ""
-    "P"    -> offsetFromUtc date |> formatTimeZoneOffset ":"
+    "O"    -> (if asUtc then 0 else offsetFromUtc date) |> formatTimeZoneOffset ""
+    "P"    -> (if asUtc then 0 else offsetFromUtc date) |> formatTimeZoneOffset ":"
     -- escaped
     s      -> slice 1 -1 s
 
 
-toFormattedString : String -> Date -> String
-toFormattedString format date =
-  replace All tokens (\{ match } -> f date match) format
+toUtc : Date -> Date
+toUtc date =
+  Date.fromTime <| Date.toTime date - (toFloat (offsetFromUtc date * msPerMinute))
+
+
+toFormattedString : Bool -> String -> Date -> String
+toFormattedString asUtc format date =
+  let
+    date' = if asUtc then toUtc date else date
+  in
+    replace All tokens (\{ match } -> f asUtc date' match) format

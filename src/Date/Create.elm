@@ -107,4 +107,4 @@ fromSpec (Offset o) (TimeMS t) (DateMS d) =
 
 fromJulianDate : Float -> Date
 fromJulianDate j =
-  Date.fromTime <| (j - 2440587.5) * toFloat msPerDay
+  fromTime <| round <| (j - 2440587.5) * toFloat msPerDay

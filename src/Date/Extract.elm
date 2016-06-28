@@ -6,8 +6,7 @@ module Date.Extract exposing (
   weekdayNumber,
   weekNumber,
   weekYear,
-  offsetFromUtc,
-  msOffsetFromUtc
+  offsetFromUtc
   )
 
 import Date exposing (Date, Month(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
