@@ -22,7 +22,6 @@ while `Date.toTime` returns the UTC representation.
 In some cases you may want to specify a date with a time zone offset or from
 week-date or ordinal-date parts. The `fromSpec` function provides a way to
 do this.
-
 @docs fromSpec
 
 ## TimeZone
@@ -78,15 +77,15 @@ fromOffsetTime (offset, time) =
     import Date exposing (Month(..))
     import Date.Create as Date
 
+    Date.fromParts 1999 Dec 31 23 59 0 0
     -- 31 December 1999, 11:59 p.m., local time
-    date = Date.fromParts 1999 Dec 31 23 59 0 0
 
 Values of the number parts are not checked to ensure a valid date
 representation; providing values outside of a valid range results in underflow
 or overflow, rather than clamping.
 
+    Date.fromParts 2007 Feb 29 0 0 0 0
     -- 1 March 2007
-    date = Date.fromParts 2007 Feb 29 0 0 0 0
 -}
 fromParts : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
 fromParts y m d hh mm ss ms =
@@ -96,7 +95,7 @@ fromParts y m d hh mm ss ms =
 {-| Convenience function for creating a `Date` from only the year, month, and
 day parts.
 
-    date = Date.fromCalendarDate 2000 Jan 1
+    Date.fromCalendarDate 2000 Jan 1
 -}
 fromCalendarDate : Int -> Month -> Int -> Date
 fromCalendarDate y m d =
@@ -106,14 +105,14 @@ fromCalendarDate y m d =
 {-| Attempt to create a `Date` from a string formatted as a valid [ISO 8601](
 https://en.wikipedia.org/wiki/ISO_8601) date or date-time representation.
 
+    Date.fromIsoString "2000-01-01"
     -- Just <1 January 2000, local time>
-    date = Date.fromIsoString "2000-01-01"
 
+    Date.fromIsoString "2016-08-05T20:00-03:00"
     -- Just <5 August 2016, 23:00, UTC>
-    opening = Date.fromIsoString "2016-08-05T20:00-03:00"
 
+    Date.fromIsoString "1/1/2001"
     -- Nothing
-    notIso = Date.fromIsoString "1/1/2001"
 
 When a `Date` is created with a specified time zone offset (e.g. `"-03:00"`),
 its extractions still represent local time, and `Date.toTime` still represents
@@ -200,23 +199,23 @@ weekDate y w d =
 
 {-| Create a `Date` from a specified time zone, time of day, and day.
 
-    -- 1 January 2000, UTC
-    date = Date.fromSpec
+    Date.fromSpec
       utc
       noTime
-      (calendarDate 2000 Jan 1)
+      (ordinalDate 2000 1)
+    -- 1 January 2000, UTC
 
-    -- 5 August 2016, 20:00, UTC-03:00
-    opening = Date.fromSpec
+    Date.fromSpec
       (offset -180)
       (atTime 20 0 0 0)
       (calendarDate 2016 Aug 5)
+    -- 5 August 2016, 20:00, UTC-03:00
 
-    -- 29 December 2008, local time
-    week1 = Date.fromSpec
+    Date.fromSpec
       local
       noTime
       (weekDate 2009 1 1)
+    -- 29 December 2008, local time
 
 When a `Date` is created with a specified time zone offset (e.g. `offset -180`),
 its extractions still represent local time, and `Date.toTime` still represents

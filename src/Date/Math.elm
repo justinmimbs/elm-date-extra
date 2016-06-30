@@ -12,19 +12,36 @@ module Date.Math exposing (
   range
   )
 
+{-| Functions for working with dates as numeric quantities.
+
+# Dates as Atomic Values
+@docs equal, compare, isBetween, clamp
+
+# Dates as Composite Values
+Functions for working with dates within the context of a given interval
+of time.
+@docs Interval, equalBy, floor, ceiling, add, diff, range
+-}
+
+
 import Date exposing (Date, Month(..), Day(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
 import Date.Facts exposing (monthFromMonthNumber, weekdayNumberFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
 import Date.Extract exposing (monthNumber, quarter, weekYear, weekNumber, weekdayNumber, fractionalDay)
 import Date.Create exposing (fromParts, fromCalendarDate)
 
 
--- Operations for dates as singular values
-
+{-| Test equality of two dates.
+-}
 equal : Date -> Date -> Bool
 equal a b =
   toTime a == toTime b
 
 
+{-| Compare two dates. This can be used as the compare function for
+`List.sortWith`.
+
+    sortedDates = List.sortWith Date.compare unsortedDates
+-}
 compare : Date -> Date -> Order
 compare a b =
   Basics.compare (toTime a) (toTime b)
@@ -35,11 +52,16 @@ comparableIsBetween a b x =
   a <= x && x <= b || b <= x && x <= a
 
 
+{-| Test if a date is within a given range, inclusive of the range values. The
+expression `Date.isBetween a b x` tests if `x` is between `a` and `b`.
+-}
 isBetween : Date -> Date -> Date -> Bool
 isBetween date1 date2 date =
   comparableIsBetween (toTime date1) (toTime date2) (toTime date)
 
 
+{-| Clamp a date within a given range.
+-}
 clamp : Date -> Date -> Date -> Date
 clamp min max date =
   if toTime date < toTime min then
@@ -50,8 +72,8 @@ clamp min max date =
     date
 
 
--- Operations for dates as composite values
-
+{-| Represents an interval of time.
+-}
 type Interval
   = Millisecond
   | Second
@@ -71,6 +93,14 @@ type Interval
   | Sunday
 
 
+{-| Test if two dates fall within the same interval.
+
+    dec31 = Date.fromCalendarDate 1999 Dec 31
+    jan1 = Date.fromCalendarDate 2000 Jan 1
+
+    Date.equalBy Month dec31 jan1 -- False
+    Date.equalBy Week dec31 jan1 -- True
+-}
 equalBy : Interval -> Date -> Date -> Bool
 equalBy interval date1 date2 =
   case interval of
@@ -118,6 +148,12 @@ daysToPreviousDayOfWeek d date =
   negate <| (weekdayNumber date - weekdayNumberFromDayOfWeek d + 7) % 7
 
 
+{-| Round down a date to the beginning of the closest interval. The resulting
+date will be less than or equal to the one provided.
+
+    Date.floor Hour (Date.fromParts 1999 Dec 31 23 59 59 999)
+    -- 31 December 1999, 23:00
+-}
 floor : Interval -> Date -> Date
 floor interval date =
   let
@@ -153,6 +189,11 @@ addMonths n date =
     fromParts y' m' d hh mm ss ms
 
 
+{-| Add a number of whole intervals to a date.
+
+    Date.add Week 2 (Date.fromParts 2007 Mar 15 11 55 0 0)
+    -- 29 March 2007, 11:55
+-}
 add : Interval -> Int -> Date -> Date
 add interval n date =
   let
@@ -177,6 +218,12 @@ add interval n date =
       Sunday      -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Sun date) hh mm ss ms
 
 
+{-| Round up a date to the beginning of the closest interval. The resulting
+date will be greater than or equal to the one provided.
+
+    Date.ceiling Monday (Date.fromParts 1999 Dec 31 23 59 59 999)
+    -- 3 January 2000
+-}
 ceiling : Interval -> Date -> Date
 ceiling interval date =
   let
@@ -199,6 +246,13 @@ diffMonth date1 date2 =
     ordinalMonth' date2 - ordinalMonth' date1 |> truncate
 
 
+{-| Find the difference, as a number of whole intervals, between two dates.
+
+    Date.diff Month
+      (Date.fromParts 2007 Mar 15 11 55 0 0)
+      (Date.fromParts 2007 Sep 1 0 0 0 0)
+    -- 5
+-}
 diff : Interval -> Date -> Date -> Int
 diff interval date1 date2 =
   let
@@ -224,6 +278,15 @@ unfold f seed =
     Just (x, nextSeed) -> x :: unfold f nextSeed
 
 
+{-| Create a list of dates, at rounded intervals, increasing by a step value,
+between two dates. The list will start at or after the first date, and end
+before the second date.
+
+    Date.range Day 2
+      (Date.fromParts 2007 Mar 15 11 55 0 0)
+      (Date.fromParts 2007 Mar 22 0 0 0 0)
+    -- [ 16 March 2007, 18 March 2007, 20 March 2007 ]
+-}
 range : Interval -> Int -> Date -> Date -> List Date
 range interval step start end =
   let
