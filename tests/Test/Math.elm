@@ -1,5 +1,11 @@
-module Test.Math exposing (..)
+module Test.Math exposing (tests)
 
 import ElmTest exposing (Test, suite)
 
-import Date.Math as Date
+import Date.Math as Date exposing (Interval(..))
+
+
+tests : Test
+tests =
+  suite "Math" [
+  ]

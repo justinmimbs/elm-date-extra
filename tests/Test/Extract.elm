@@ -52,7 +52,7 @@ ordinalDayTests =
   let
     ordinalDayTest : Int -> Date -> Test
     ordinalDayTest i date =
-      equals (ordinalDay date) (i + 1)
+      equals (i + 1) (ordinalDay date)
   
   in
     suite "ordinalDay" [
@@ -66,11 +66,11 @@ ordinalDayTests =
 fractionalDayTests : Test
 fractionalDayTests =
   suite "fractionalDay" [
-    equals (fractionalDay <| Date.fromParts 2001 Jan 1  0 0 0 0) 0.0,
-    equals (fractionalDay <| Date.fromParts 2001 Jan 1  6 0 0 0) 0.25,
-    equals (fractionalDay <| Date.fromParts 2001 Jan 1 12 0 0 0) 0.5,
-    equals (fractionalDay <| Date.fromParts 2001 Jan 1 18 0 0 0) 0.75,
-    equals (fractionalDay <| Date.fromParts 2001 Jan 1  1 1 1 1) (3661001 / 86400000)
+    equals 0.0                  (fractionalDay <| Date.fromParts 2001 Jan 1  0 0 0 0),
+    equals 0.25                 (fractionalDay <| Date.fromParts 2001 Jan 1  6 0 0 0),
+    equals 0.5                  (fractionalDay <| Date.fromParts 2001 Jan 1 12 0 0 0),
+    equals 0.75                 (fractionalDay <| Date.fromParts 2001 Jan 1 18 0 0 0),
+    equals (3661001 / 86400000) (fractionalDay <| Date.fromParts 2001 Jan 1  1 1 1 1)
   ]
 
 
@@ -103,7 +103,7 @@ weekDateTests =
 
     weekDateTest : (Int, Month, Int) -> (Int, Int, Int) -> Test
     weekDateTest (y, m, d) weekDate =
-      equals (toWeekDate <| Date.fromCalendarDate y m d) weekDate
+      equals weekDate (toWeekDate <| Date.fromCalendarDate y m d)
 
   in
     suite "weekYear, weekNumber, weekdayNumber" <|
