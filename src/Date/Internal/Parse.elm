@@ -6,7 +6,7 @@ import Regex exposing (Regex, HowMany(AtMost), regex)
 import String
 import Date exposing (Date, Month)
 import Date.Facts exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
-import Date.Internal.Core exposing (unixTimeFromParts)
+import Date.Internal.Core exposing (unixTimeFromCalendarDate, unixTimeFromWeekDate, unixTimeFromOrdinalDate)
 
 
 (>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
@@ -36,16 +36,28 @@ stringToFloat s =
 isoDateRegex : Regex
 isoDateRegex =
   let
-    date =
-      "^(?:(\\d{4})(?:(\\-)?(\\d\\d))?(?:\\2(\\d\\d))?)"
-      --   1          2     3               4
-      --   yyyy             mm              dd
+    year =
+      "(\\d{4})"
+    -- 1
+    -- yyyy
+    cal =
+      "(\\-)?(\\d{2})(?:\\2(\\d{2}))?"
+    -- 2     3             4
+    --       mm            dd
+    week =
+      "(\\-)?W(\\d{2})(?:\\5(\\d))?"
+    -- 5      6             7
+    --        ww            d
+    ord =
+      "\\-?(\\d{3})"
+    --     8
+    --     ddd
     time =
-      "(?:T(\\d\\d)(?:(\\:)?(\\d\\d)(?:\\6(\\d\\d))?)?(\\.\\d+)?(?:(Z)|(?:([+\\-])(\\d\\d)(?:\\:?(\\d\\d))?))?)?$"
-      --   5          6     7             8           9            10     11      12             13
-      --   hh               mm            ss          .f           Z      +/-     hh             mm
+      "T(\\d{2})(?:(\\:)?(\\d{2})(?:\\10(\\d{2}))?)?(\\.\\d+)?(?:(Z)|(?:([+\\-])(\\d{2})(?:\\:?(\\d{2}))?))?"
+    --  9          10    11             12          13           14     15      16             17
+    --  hh               mm             ss          .f           Z      +/-     hh             mm
   in
-    regex (date ++ time)
+    regex <| "^" ++ year ++ "(?:" ++ cal ++ "|" ++ week ++ "|" ++ ord  ++ ")?" ++ "(?:" ++ time ++ ")?$"
 
 
 offsetTimeFromIsoString : String -> Maybe (Maybe Int, Int)
@@ -56,26 +68,47 @@ offsetTimeFromIsoString s =
 offsetTimeFromMatches : List (Maybe String) -> Maybe (Maybe Int, Int)
 offsetTimeFromMatches matches =
   case matches of
-    [dateY, _, dateM, dateD, timeH, _, timeM, timeS, timeF, tzZ, tzSign, tzH, tzM] ->
+    [Just yyyy, _, calMM, calDD, _, weekWW, weekD, ordDDD, timeHH, _, timeMM, timeSS, timeF, tzZ, tzSign, tzHH, tzMM] ->
       let
-        y = (dateY >>= stringToInt) ? 1
-        m = (dateM >>= stringToInt) ? 1 |> monthFromMonthNumber
-        d = (dateD >>= stringToInt) ? 1
-        ms = msFromMatches timeH timeM timeS timeF
-        offset = offsetFromMatches tzZ tzSign tzH tzM
+        dateMS = unixTimeFromMatches yyyy calMM calDD weekWW weekD ordDDD
+        timeMS = msFromMatches timeHH timeMM timeSS timeF
+        offset = offsetFromMatches tzZ tzSign tzHH tzMM
       in
-        Just <| (offset, unixTimeFromParts y m d 0 0 0 ms)
-
+        Just <| (offset, dateMS + timeMS)
     _ ->
       Nothing
 
 
+unixTimeFromMatches : String -> Maybe String -> Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
+unixTimeFromMatches yyyy calMM calDD weekWW weekD ordDDD =
+  let
+    y = stringToInt yyyy ? 1
+  in
+    case (calMM, weekWW) of
+      (Just _, Nothing) ->
+        unixTimeFromCalendarDate
+          y
+          ((calMM >>= stringToInt) ? 1 |> monthFromMonthNumber)
+          ((calDD >>= stringToInt) ? 1)
+
+      (Nothing, Just _) ->
+        unixTimeFromWeekDate
+          y
+          ((weekWW >>= stringToInt) ? 1)
+          ((weekD >>= stringToInt) ? 1)
+
+      _ ->
+        unixTimeFromOrdinalDate
+          y
+          ((ordDDD >>= stringToInt) ? 1)
+
+
 msFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
-msFromMatches timeH timeM timeS timeF =
+msFromMatches timeHH timeMM timeSS timeF =
   let
     f = (timeF >>= stringToFloat) ? 0.0
     (hh, mm, ss) =
-      case List.map (\m -> m >>= stringToFloat) [timeH, timeM, timeS] of
+      case List.map (\m -> m >>= stringToFloat) [timeHH, timeMM, timeSS] of
         [Just hh, Just mm, Just ss] -> (hh, mm, ss + f)
         [Just hh, Just mm, Nothing] -> (hh, mm + f, 0.0)
         [Just hh, Nothing, Nothing] -> (hh + f, 0.0, 0.0)
@@ -88,15 +121,15 @@ msFromMatches timeH timeM timeS timeF =
 
 
 offsetFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Maybe Int
-offsetFromMatches tzZ tzSign tzH tzM =
+offsetFromMatches tzZ tzSign tzHH tzMM =
   case (tzZ, tzSign) of
     (Just "Z", Nothing) ->
       Just 0
 
     (Nothing, Just sign) ->
       let
-        hh = (tzH >>= stringToInt) ? 0
-        mm = (tzM >>= stringToInt) ? 0
+        hh = (tzHH >>= stringToInt) ? 0
+        mm = (tzMM >>= stringToInt) ? 0
       in
         Just <| (if sign == "+" then 1 else -1) * (hh * 60 + mm)
 

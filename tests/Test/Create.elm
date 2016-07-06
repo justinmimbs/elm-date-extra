@@ -2,6 +2,7 @@ module Test.Create exposing (tests)
 
 import ElmTest exposing (Test, suite, test, assertEqual, equals)
 import String
+import Regex exposing (Regex, HowMany(All), regex, replace)
 
 import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset, calendarDatesInYear)
 import Date exposing (Date, Month(..))
@@ -45,115 +46,124 @@ fromCalendarDateTests =
 fromIsoStringTests : Test
 fromIsoStringTests =
   let
-    replace : String -> String -> String
-    replace x string =
-      String.split x string |> String.concat
+    extendedDatePairs = [
+      ("2008",       (2008, Jan,  1)),
+      ("2008-12",    (2008, Dec,  1)),
+      ("2008-12-31", (2008, Dec, 31)),
+      ("2009-W01",   (2008, Dec, 29)),
+      ("2009-W01-4", (2009, Jan,  1)),
+      ("2008-061",   (2008, Mar,  1))
+    ]
 
-    basicFromExtended : String -> String
-    basicFromExtended string =
-      case String.split "T" string of
-        [d]    -> replace "-" d
-        [d, t] -> replace "-" d ++ "T" ++ replace ":" t
-        _      -> ""
+    extendedTimePairs = [
+      ("",              ( 0,  0,  0,   0)),
+      ("T00",           ( 0,  0,  0,   0)),
+      ("T20",           (20,  0,  0,   0)),
+      ("T20.75",        (20, 45,  0,   0)),
+      ("T20.7583333",   (20, 45, 30,   0)),
+      ("T20.75835",     (20, 45, 30,  60)),
+      ("T20:00",        (20,  0,  0,   0)),
+      ("T20:30",        (20, 30,  0,   0)),
+      ("T20:30.75",     (20, 30, 45,   0)),
+      ("T20:30.75833",  (20, 30, 45, 500)),
+      ("T20:30:00",     (20, 30,  0,   0)),
+      ("T20:30:40",     (20, 30, 40,   0)),
+      ("T20:30:40.007", (20, 30, 40,   7)),
+      ("T20:30:40.067", (20, 30, 40,  67)),
+      ("T20:30:40.5",   (20, 30, 40, 500)),
+      ("T20:30:40.56",  (20, 30, 40, 560)),
+      ("T20:30:40.567", (20, 30, 40, 567))
+    ]
 
-    fromIsoStringTestList : (Date -> DateParts) -> List (String, Maybe DateParts) -> List Test
-    fromIsoStringTestList toDateParts extendedPairs =
+    basicFromExtended : Regex -> (String, a) -> Maybe (String, a)
+    basicFromExtended symbol (extended, parts) =
       let
-        basicPairs = List.map
-          (\(extended, expected) -> (basicFromExtended extended, expected))
-          extendedPairs
+        basic = replace All symbol (\_ -> "") extended
       in
-        List.map (\(string, expected) ->
-          test string <| assertEqual expected <| Maybe.map toDateParts <| fromIsoString string
-        ) (extendedPairs ++ basicPairs)
+        if basic == extended then
+          Nothing
+        else
+          Just (basic, parts)
 
-    suite1 = suite "local" <| fromIsoStringTestList
-      toParts
-      [
-        ("2008-12-31T20:30:40.567", Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40.067", Just (2008, Dec, 31, 20, 30, 40,  67)),
-        ("2008-12-31T20:30:40.007", Just (2008, Dec, 31, 20, 30, 40,   7)),
-        ("2008-12-31T20:30:40.56",  Just (2008, Dec, 31, 20, 30, 40, 560)),
-        ("2008-12-31T20:30:40.5",   Just (2008, Dec, 31, 20, 30, 40, 500)),
-        ("2008-12-31T20:30:40",     Just (2008, Dec, 31, 20, 30, 40,   0)),
+    -- list of "<date>" and "<date>T<time>" formatted strings
+    dateAndDateTimePairs : List (String, Maybe DateParts)
+    dateAndDateTimePairs =
+      let
+        datePairs = extendedDatePairs ++ List.filterMap (basicFromExtended (regex "-")) extendedDatePairs
+        timePairs = extendedTimePairs ++ List.filterMap (basicFromExtended (regex ":")) extendedTimePairs
+      in
+        List.concatMap (\(ds, (y, m, d)) ->
+          List.map (\(ts, (hh, mm, ss, ms)) ->
+            (ds ++ ts, Just (y, m, d, hh, mm, ss, ms))
+          ) timePairs
+        ) datePairs
 
-        ("2008-12-31T20:30.75",     Just (2008, Dec, 31, 20, 30, 45,   0)),
-        ("2008-12-31T20:30.75833",  Just (2008, Dec, 31, 20, 30, 45, 500)),
-        ("2008-12-31T20:30",        Just (2008, Dec, 31, 20, 30,  0,   0)),
+    -- list of "<date>T<time>" formatted strings
+    dateTimePairs : List (String, Maybe DateParts)
+    dateTimePairs =
+      List.filter (String.contains "T" << fst) dateAndDateTimePairs
 
-        ("2008-12-31T20.75",        Just (2008, Dec, 31, 20, 45,  0,   0)),
-        ("2008-12-31T20.7583333",   Just (2008, Dec, 31, 20, 45, 30,   0)),
-        ("2008-12-31T20.75835",     Just (2008, Dec, 31, 20, 45, 30,  60)),
-        ("2008-12-31T20",           Just (2008, Dec, 31, 20,  0,  0,   0)),
-        ("2008-12-31T00",           Just (2008, Dec, 31,  0,  0,  0,   0)),
+    -- create list of "<date>T<time><offset>" formatted strings
+    dateTimePairsWithOffset : String -> List (String, Maybe DateParts)
+    dateTimePairsWithOffset offset =
+      List.map (\(s, x) -> (s ++ offset, x)) dateTimePairs
 
-        ("2008-12-31",              Just (2008, Dec, 31,  0,  0,  0,   0)),
-        ("2008-12",                 Just (2008, Dec,  1,  0,  0,  0,   0)),
-        ("2008",                    Just (2008, Jan,  1,  0,  0,  0,   0))
-      ]
+    fromIsoStringTest : (Date -> DateParts) -> (String, Maybe DateParts) -> Test
+    fromIsoStringTest toDateParts (string, expected) =
+      test string <| assertEqual expected <| Maybe.map toDateParts <| fromIsoString string
 
-    suite2 = suite "utc" <| fromIsoStringTestList
-      (toParts << toUtc)
-      [
-        ("2008-12-31T20:30:40.567+00:00", Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40.567+00",    Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40.567Z",      Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40+00:00",     Just (2008, Dec, 31, 20, 30, 40,   0)),
-        ("2008-12-31T20:30:40Z",          Just (2008, Dec, 31, 20, 30, 40,   0)),
-
-        ("2008-12-31T20:30.75+00:00",     Just (2008, Dec, 31, 20, 30, 45,   0)),
-        ("2008-12-31T20:30.75Z",          Just (2008, Dec, 31, 20, 30, 45,   0)),
-        ("2008-12-31T20:30+00:00",        Just (2008, Dec, 31, 20, 30,  0,   0)),
-        ("2008-12-31T20:30Z",             Just (2008, Dec, 31, 20, 30,  0,   0)),
-
-        ("2008-12-31T20.75+00:00",        Just (2008, Dec, 31, 20, 45,  0,   0)),
-        ("2008-12-31T20.75Z",             Just (2008, Dec, 31, 20, 45,  0,   0)),
-        ("2008-12-31T00+00:00",           Just (2008, Dec, 31,  0,  0,  0,   0)),
-        ("2008-12-31T00Z",                Just (2008, Dec, 31,  0,  0,  0,   0)),
-
-        ("2008-12-31+00:00",              Nothing),
-        ("2008-12-31Z",                   Nothing),
-        ("2008-12Z",                      Nothing),
-        ("2008Z",                         Nothing)
-      ]
-
-    suite3 = suite "offset -07:00" <| fromIsoStringTestList
-      (toParts << (toTimeOffset -420))
-      [
-        ("2008-12-31T20:30:40.567-07:00", Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40.567-07",    Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40-07:00",     Just (2008, Dec, 31, 20, 30, 40,   0)),
-
-        ("2008-12-31T20:30.75-07:00",     Just (2008, Dec, 31, 20, 30, 45,   0)),
-        ("2008-12-31T20:30-07:00",        Just (2008, Dec, 31, 20, 30,  0,   0)),
-
-        ("2008-12-31T20.75-07:00",        Just (2008, Dec, 31, 20, 45,  0,   0)),
-        ("2008-12-31T00-07:00",           Just (2008, Dec, 31,  0,  0,  0,   0)),
-        ("2008-12-31T00-07",              Just (2008, Dec, 31,  0,  0,  0,   0)),
-
-        ("2008-12-31-07:00",              Nothing),
-        ("2008-12-07:00",                 Nothing),
-        ("2008-07:00",                    Nothing)
-      ]
-
-    suite4 = suite "offset +04:30" <| fromIsoStringTestList
-      (toParts << (toTimeOffset 270))
-      [
-        ("2008-12-31T20:30:40.567+04:30", Just (2008, Dec, 31, 20, 30, 40, 567)),
-        ("2008-12-31T20:30:40+04:30",     Just (2008, Dec, 31, 20, 30, 40,   0)),
-
-        ("2008-12-31T20:30.75+04:30",     Just (2008, Dec, 31, 20, 30, 45,   0)),
-        ("2008-12-31T20:30+04:30",        Just (2008, Dec, 31, 20, 30,  0,   0)),
-
-        ("2008-12-31T20.75+04:30",        Just (2008, Dec, 31, 20, 45,  0,   0)),
-        ("2008-12-31T00+04:30",           Just (2008, Dec, 31,  0,  0,  0,   0)),
-
-        ("2008-12-31+04:30",              Nothing),
-        ("2008-12+04:30",                 Nothing),
-        ("2008+04:30",                    Nothing)
-      ]
   in
-    suite "fromIsoString" [suite1, suite2, suite3, suite4]
+    suite "fromIsoString" [
+      suite "local" <|
+        List.map (fromIsoStringTest toParts)
+        dateAndDateTimePairs,
+
+      suite "utc" <|
+        List.map (fromIsoStringTest (toParts << toUtc)) <|
+        List.concatMap dateTimePairsWithOffset
+        [
+          "+00:00",
+          "+0000",
+          "+00",
+          "Z"
+        ],
+
+      suite "offset -07:00" <|
+        List.map (fromIsoStringTest (toParts << (toTimeOffset -420))) <|
+        List.concatMap dateTimePairsWithOffset
+        [
+          "-07:00",
+          "-0700",
+          "-07"
+        ],
+
+      suite "offset +04:30" <|
+        List.map (fromIsoStringTest (toParts << (toTimeOffset 270))) <|
+        List.concatMap dateTimePairsWithOffset
+        [
+          "+04:30",
+          "+0430"
+        ],
+
+      suite "invalid" <|
+        List.map (fromIsoStringTest toParts)
+        [
+          ("2008-1231",          Nothing),
+          ("200812-31",          Nothing),
+          ("2008-W014",          Nothing),
+          ("2008W01-4",          Nothing),
+          ("2008-W01-04",        Nothing),
+          ("2008-12-31T20:3040", Nothing),
+          ("2008-12-31T2030:40", Nothing),
+          ("2008-12-31Z",        Nothing),
+          ("2008-12Z",           Nothing),
+          ("2008Z",              Nothing),
+          ("2008-12-31+00:00",   Nothing),
+          ("2008-12-31-07:00",   Nothing),
+          ("2008-12-07:00",      Nothing),
+          ("2008-07:00",         Nothing)
+        ]
+    ]
 
 
 fromSpecTests : Test
