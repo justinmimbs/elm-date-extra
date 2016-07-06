@@ -41,7 +41,7 @@ do this.
 import Date exposing (Date, Month)
 import Date.Facts exposing (msPerMinute, msPerDay)
 import Date.Extract exposing (offsetFromUtc)
-import Date.Internal.Core exposing (unixTimeFromParts, unixTimeFromCalendarDate, unixTimeFromWeekDate, msFromTimeParts)
+import Date.Internal.Core exposing (unixTimeFromParts, unixTimeFromCalendarDate, unixTimeFromWeekDate, unixTimeFromOrdinalDate, msFromTimeParts)
 import Date.Internal.Parse exposing (offsetTimeFromIsoString)
 
 
@@ -187,7 +187,7 @@ calendarDate y m d =
 -}
 ordinalDate : Int -> Int -> DateSpec
 ordinalDate y d =
-  DateMS <| unixTimeFromCalendarDate y Date.Jan d
+  DateMS <| unixTimeFromOrdinalDate y d
 
 
 {-| Create a `DateSpec` from week-date parts (weekYear, weekNumber, weekdayNumber).

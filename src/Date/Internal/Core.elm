@@ -2,6 +2,7 @@ module Date.Internal.Core exposing (
   unixTimeFromParts,
   unixTimeFromCalendarDate,
   unixTimeFromWeekDate,
+  unixTimeFromOrdinalDate,
   msFromTimeParts,
   weekYearFromCalendarDate,
   weekNumberFromCalendarDate
@@ -34,6 +35,11 @@ unixTimeFromCalendarDate y m d =
 unixTimeFromWeekDate : Int -> Int -> Int -> Int
 unixTimeFromWeekDate y w d =
   RataDie.toUnixTime <| RataDie.fromWeekDate y w d
+
+
+unixTimeFromOrdinalDate : Int -> Int -> Int
+unixTimeFromOrdinalDate y d =
+  RataDie.toUnixTime <| RataDie.fromOrdinalDate y d
 
 
 weekYearFromCalendarDate : Int -> Month -> Int -> Int
