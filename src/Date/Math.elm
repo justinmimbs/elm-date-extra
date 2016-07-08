@@ -18,14 +18,12 @@ module Date.Math exposing (
 @docs equal, compare, isBetween, clamp
 
 # Dates as Composite Values
-Functions for working with dates within the context of a given interval
-of time.
 @docs Interval, equalBy, floor, ceiling, add, diff, range
 -}
 
 
 import Date exposing (Date, Month(..), Day(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import Date.Facts exposing (monthFromMonthNumber, weekdayNumberFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
+import Date.Facts exposing (daysInMonth, monthFromMonthNumber, weekdayNumberFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
 import Date.Extract exposing (monthNumber, quarter, weekYear, weekNumber, weekdayNumber, fractionalDay)
 import Date.Create exposing (fromParts, fromCalendarDate)
 
@@ -185,14 +183,21 @@ addMonths n date =
     om = ordinalMonth date + n + -1
     y' = om // 12
     m' = om % 12 + 1 |> monthFromMonthNumber
+    d' = Basics.min d (daysInMonth y' m')
   in
-    fromParts y' m' d hh mm ss ms
+    fromParts y' m' d' hh mm ss ms
 
 
 {-| Add a number of whole intervals to a date.
 
     Date.add Week 2 (Date.fromParts 2007 Mar 15 11 55 0 0)
     -- 29 March 2007, 11:55
+
+When adding Month, Quarter, or Year intervals, day values are clamped at the
+end of the month if necessary.
+
+    Date.add Month 1 (Date.fromParts 2000 Jan 31 0 0 0 0)
+    -- 29 February 2000
 -}
 add : Interval -> Int -> Date -> Date
 add interval n date =
@@ -206,16 +211,10 @@ add interval n date =
       Hour        -> fromParts y m d (hh + n) mm ss ms
       Day         -> fromParts y m (d + n) hh mm ss ms
       Month       -> addMonths n date
-      Year        -> fromParts (y + n) m d hh mm ss ms
+      Year        -> addMonths (n * 12) date
       Quarter     -> addMonths (n * 3) date
       Week        -> fromParts y m (d + n * 7) hh mm ss ms
-      Monday      -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Mon date) hh mm ss ms
-      Tuesday     -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Tue date) hh mm ss ms
-      Wednesday   -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Wed date) hh mm ss ms
-      Thursday    -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Thu date) hh mm ss ms
-      Friday      -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Fri date) hh mm ss ms
-      Saturday    -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Sat date) hh mm ss ms
-      Sunday      -> fromParts y m (d + n * 7 + daysToPreviousDayOfWeek Sun date) hh mm ss ms
+      weekday     -> fromParts y m (d + n * 7) hh mm ss ms
 
 
 {-| Round up a date to the beginning of the closest interval. The resulting
@@ -256,7 +255,7 @@ diffMonth date1 date2 =
 diff : Interval -> Date -> Date -> Int
 diff interval date1 date2 =
   let
-    diffMS = toTime date2 - toTime date1 |> truncate
+    diffMS = toTime date2 - toTime date1 |> Basics.floor
   in
     case interval of
       Millisecond -> diffMS
