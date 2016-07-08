@@ -10,10 +10,10 @@ module Date.Create exposing (
   )
 
 {-| A `Date` represents a moment in time, encoded by two essential pieces of
-information: the number of milliseconds since January 1, 1970 UTC, and the
-offset between UTC and your local time. Extractions of a `Date` (e.g.
-`Date.month`, `Date.hour`) return representations of the date in local time,
-while `Date.toTime` returns the UTC representation.
+information: the number of milliseconds since 1 January 1970 UTC, and the
+offset between UTC and the current machine's local time. Extractions of a
+`Date` (e.g. `Date.month`, `Date.hour`) return representations of the date in
+local time, while `Date.toTime` returns the UTC representation.
 
 # Common Constructors
 @docs fromParts, fromCalendarDate, fromIsoString
@@ -80,9 +80,9 @@ fromOffsetTime (offset, time) =
     Date.fromParts 1999 Dec 31 23 59 0 0
     -- 31 December 1999, 11:59 p.m., local time
 
-Values of the number parts are not checked to ensure a valid date
-representation; providing values outside of a valid range results in underflow
-or overflow, rather than clamping.
+The values of the parts are not checked to ensure a valid date representation,
+nor are they clamped to valid range; instead, providing values outside a valid
+range results in underflow or overflow.
 
     Date.fromParts 2007 Feb 29 0 0 0 0
     -- 1 March 2007
@@ -102,21 +102,24 @@ fromCalendarDate y m d =
   fromOffsetTime (Nothing, unixTimeFromCalendarDate y m d)
 
 
-{-| Attempt to create a `Date` from a string formatted as a valid [ISO 8601](
-https://en.wikipedia.org/wiki/ISO_8601) date or date-time representation.
+{-| Attempt to create a `Date` from a string representing a date in [ISO 8601](
+https://en.wikipedia.org/wiki/ISO_8601) format.
 
     Date.fromIsoString "2000-01-01"
     -- Just <1 January 2000, local time>
 
-    Date.fromIsoString "2016-08-05T20:00-03:00"
+    Date.fromIsoString "2009-W01-1T00Z"
+    -- Just <29 December 2008, UTC>
+
+    Date.fromIsoString "2016-218T20:00-03:00"
     -- Just <5 August 2016, 23:00, UTC>
 
     Date.fromIsoString "1/1/2001"
     -- Nothing
 
 When a `Date` is created with a specified time zone offset (e.g. `"-03:00"`),
-its extractions still represent local time, and `Date.toTime` still represents
-its UTC time.
+its extractions still reflect the current machine's local time, and
+`Date.toTime` still reflects its UTC time.
 -}
 fromIsoString : String -> Maybe Date
 fromIsoString s =
@@ -200,26 +203,26 @@ weekDate y w d =
 {-| Create a `Date` from a specified time zone, time of day, and day.
 
     Date.fromSpec
+      local
+      noTime
+      (calendarDate 2000 Jan 1)
+    -- 1 January 2000, local time
+
+    Date.fromSpec
       utc
       noTime
-      (ordinalDate 2000 1)
-    -- 1 January 2000, UTC
+      (weekDate 2009 1 1)
+    -- 29 December 2008, UTC
 
     Date.fromSpec
       (offset -180)
       (atTime 20 0 0 0)
-      (calendarDate 2016 Aug 5)
-    -- 5 August 2016, 20:00, UTC-03:00
-
-    Date.fromSpec
-      local
-      noTime
-      (weekDate 2009 1 1)
-    -- 29 December 2008, local time
+      (ordinalDate 2016 218)
+    -- 5 August 2016, 23:00, UTC
 
 When a `Date` is created with a specified time zone offset (e.g. `offset -180`),
-its extractions still represent local time, and `Date.toTime` still represents
-its UTC time.
+its extractions still reflect the current machine's local time, and
+`Date.toTime` still reflects its UTC time.
 -}
 fromSpec : TimeZone -> TimeSpec -> DateSpec -> Date
 fromSpec (Offset o) (TimeMS t) (DateMS d) =
