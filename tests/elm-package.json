@@ -1,6 +1,6 @@
 {
     "version": "0.0.0",
-    "summary": "Tests for Date package",
+    "summary": "Tests",
     "repository": "https://github.com/justinmimbs/elm-date-extra.git",
     "license": "BSD3",
     "source-directories": [

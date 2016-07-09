@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Extra functions for working with Date",
+    "summary": "Extra functions for working with Date values",
     "repository": "https://github.com/justinmimbs/elm-date-extra.git",
     "license": "BSD3",
     "source-directories": [
