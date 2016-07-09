@@ -16,7 +16,7 @@ module Date.Convert exposing (
 -}
 
 
-import Date exposing (Date, fromTime, toTime, year, month, day, hour, minute, second, millisecond)
+import Date exposing (Date, toTime, year, month, day, hour, minute, second, millisecond)
 import Date.Facts exposing (msPerDay)
 import Date.Internal.Core exposing (unixTimeFromParts)
 import Date.Internal.Format
@@ -37,9 +37,8 @@ escaped as a sequence of two single-quotes, whether appearing inside or outside
 an escaped sequence.
 
 Patterns are based on Date Format Patterns in [Unicode Technical
-Standard #35](http://www.unicode.org/reports/tr35/tr35-43/
-tr35-dates.html#Date_Format_Patterns). Only the following subset of
-formatting characters are available:
+Standard #35](http://www.unicode.org/reports/tr35/tr35-43/tr35-dates.html#Date_Format_Patterns).
+Only the following subset of formatting characters are available:
 
     "y" -- year
     "Y" -- week-numbering year

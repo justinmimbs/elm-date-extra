@@ -117,8 +117,8 @@ fromCalendarDate y m d =
   fromOffsetTime (Nothing, unixTimeFromCalendarDate y m d)
 
 
-{-| Attempt to create a `Date` from a string representing a date in [ISO 8601](
-https://en.wikipedia.org/wiki/ISO_8601) format.
+{-| Attempt to create a `Date` from a string representing a date in
+[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 
     Date.fromIsoString "2000-01-01"
     -- Just <1 January 2000, local time>
