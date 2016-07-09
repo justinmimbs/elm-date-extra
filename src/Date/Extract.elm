@@ -10,7 +10,7 @@ module Date.Extract exposing (
   )
 
 {-| This module provides additional extractions to those available in the
-Core library.
+core `Date` library.
 
 @docs monthNumber, quarter, ordinalDay, fractionalDay, weekdayNumber, weekNumber, weekYear, offsetFromUtc
 -}

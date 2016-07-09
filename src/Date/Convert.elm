@@ -1,15 +1,15 @@
 module Date.Convert exposing (
   toFormattedString,
-  toTimestamp,
+  toIsoString,
   toUtcFormattedString,
-  toUtcTimestamp,
+  toUtcIsoString,
   toJulianDate
   )
 
 {-| Convert dates to other types.
 
 # Formatted Strings
-@docs toFormattedString, toTimestamp, toUtcFormattedString, toUtcTimestamp
+@docs toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString
 
 # Julian Dates
 @docs toJulianDate
@@ -79,13 +79,13 @@ toFormattedString =
 {-| Convenience function for formatting a date to ISO 8601 (extended
 date and time format with local time offset).
 
-    Date.toTimestamp (Date.fromParts 2007 Mar 15 13 45 56 67)
+    Date.toIsoString (Date.fromParts 2007 Mar 15 13 45 56 67)
 
     -- "2007-03-15T13:45:56.067-04:00"
     -- (example has a local offset of UTC-04:00)
 -}
-toTimestamp: Date -> String
-toTimestamp =
+toIsoString: Date -> String
+toIsoString =
   toFormattedString "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
 
 
@@ -100,13 +100,13 @@ toUtcFormattedString =
 {-| Convenience function for formatting a date, in UTC representation, to ISO
 8601 (extended date and time format with "Z" for time offset).
 
-    Date.toUtcTimestamp (Date.fromParts 2007 Mar 15 13 45 56 67)
+    Date.toUtcIsoString (Date.fromParts 2007 Mar 15 13 45 56 67)
 
     -- "2007-03-15T17:45:56.067Z"
     -- (example has a local offset of UTC-04:00)
 -}
-toUtcTimestamp: Date -> String
-toUtcTimestamp =
+toUtcIsoString: Date -> String
+toUtcIsoString =
   toUtcFormattedString "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
 
 

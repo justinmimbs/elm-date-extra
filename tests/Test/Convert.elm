@@ -5,7 +5,7 @@ import Regex exposing (regex, contains)
 
 import Date exposing (Date, Month(..))
 import Date.Create as Date exposing (utc, noTime, atTime, calendarDate)
-import Date.Convert exposing (toFormattedString, toTimestamp, toUtcFormattedString, toUtcTimestamp, toJulianDate)
+import Date.Convert exposing (toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString, toJulianDate)
 
 
 toFormattedStringTests : Test
@@ -273,23 +273,23 @@ toUtcFormattedStringTests =
     ]
 
 
-toTimestampTests : Test
-toTimestampTests =
+toIsoStringTests : Test
+toIsoStringTests =
   let
     date = Date.fromParts 2001 Jan 2 20 30 40 567
     expected = regex "^2001-01-02T20:30:40.567[+-][0-2]\\d:[0-5]\\d$"
   in
-    suite "toTimestamp" [
-      test "yyyy-mm-ddThh:mm:ss.fff+hh:mm" <| assert <| contains expected (toTimestamp date)
+    suite "toIsoString" [
+      test "yyyy-mm-ddThh:mm:ss.fff+hh:mm" <| assert <| contains expected (toIsoString date)
     ]
 
 
-toUtcTimestampTests : Test
-toUtcTimestampTests =
-  suite "toUtcTimestamp" [
+toUtcIsoStringTests : Test
+toUtcIsoStringTests =
+  suite "toUtcIsoString" [
     equals
       "2001-01-02T20:30:40.567Z"
-      (toUtcTimestamp <| Date.fromSpec utc (atTime 20 30 40 567) (calendarDate 2001 Jan 2))
+      (toUtcIsoString <| Date.fromSpec utc (atTime 20 30 40 567) (calendarDate 2001 Jan 2))
   ]
 
 
@@ -309,8 +309,8 @@ tests : Test
 tests =
   suite "Convert" [
     toFormattedStringTests,
-    toTimestampTests,
+    toIsoStringTests,
     toUtcFormattedStringTests,
-    toUtcTimestampTests,
+    toUtcIsoStringTests,
     toJulianDateTests
   ]
