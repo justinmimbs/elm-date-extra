@@ -93,14 +93,14 @@ fromOffsetTime (offset, time) =
     import Date.Create as Date
 
     Date.fromParts 1999 Dec 31 23 59 0 0
-    -- 31 December 1999, 11:59 p.m., local time
+    -- <31 December 1999, 23:59, local time>
 
 The values of the parts are not checked to ensure a valid date representation,
 nor are they clamped to valid range; instead, providing values outside a valid
 range results in underflow or overflow.
 
     Date.fromParts 2007 Feb 29 0 0 0 0
-    -- 1 March 2007
+    -- <1 March 2007>
 -}
 fromParts : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
 fromParts y m d hh mm ss ms =
@@ -174,7 +174,7 @@ type TimeSpec
   = TimeMS Int
 
 
-{-| Do not specify a time of day (i.e. midnight).
+{-| Do not specify a time of day (default to 00:00).
 -}
 noTime : TimeSpec
 noTime =
@@ -221,19 +221,19 @@ weekDate y w d =
       local
       noTime
       (calendarDate 2000 Jan 1)
-    -- 1 January 2000, local time
+    -- <1 January 2000, local time>
 
     Date.fromSpec
       utc
       noTime
       (weekDate 2009 1 1)
-    -- 29 December 2008, UTC
+    -- <29 December 2008, UTC>
 
     Date.fromSpec
       (offset -180)
       (atTime 20 0 0 0)
       (ordinalDate 2016 218)
-    -- 5 August 2016, 23:00, UTC
+    -- <5 August 2016, 23:00, UTC>
 
 When a `Date` is created with a specified time zone offset (e.g. `offset -180`),
 its extractions still reflect the current machine's local time, and
@@ -246,6 +246,9 @@ fromSpec (Offset o) (TimeMS t) (DateMS d) =
 
 {-| Create a `Date` from a [Julian Date](https://en.wikipedia.org/wiki/Julian_day).
 Julian Dates always represent UTC time.
+
+    Date.fromJulianDate 2456293.52083333
+    -- <1 January 2013, 00:30, UTC>
 -}
 fromJulianDate : Float -> Date
 fromJulianDate j =

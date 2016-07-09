@@ -89,7 +89,8 @@ msOffsetFromUtc date =
     localTime - utcTime |> floor
 
 
-{-| Extract the offset from UTC time in minutes of a date. Given a date with a local offset of UTC-05:00 this returns the integer -300.
+{-| Extract the local offset from UTC time, in minutes, of a date. Given a date
+with a local offset of UTC-05:00 this returns the integer -300.
 -}
 offsetFromUtc : Date -> Int
 offsetFromUtc date =

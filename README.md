@@ -83,7 +83,6 @@ Date.diff Day date (Date.add Week 2 date)
 Date.range Monday 1
   (Date.floor Month date)   -- <1 December 1999>
   (Date.ceiling Month date) -- <1 January 2000>
-
 -- [<6 December 1999>, <13 December 1999>, <20 December 1999>, <27 December 1999>]
 ```
 

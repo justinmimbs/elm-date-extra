@@ -97,7 +97,7 @@ type Interval
     jan1 = Date.fromCalendarDate 2000 Jan 1
 
     Date.equalBy Month dec31 jan1 -- False
-    Date.equalBy Week dec31 jan1 -- True
+    Date.equalBy Week  dec31 jan1 -- True
 -}
 equalBy : Interval -> Date -> Date -> Bool
 equalBy interval date1 date2 =
@@ -150,7 +150,7 @@ daysToPreviousDayOfWeek d date =
 date will be less than or equal to the one provided.
 
     Date.floor Hour (Date.fromParts 1999 Dec 31 23 59 59 999)
-    -- 31 December 1999, 23:00
+    -- <31 December 1999, 23:00>
 -}
 floor : Interval -> Date -> Date
 floor interval date =
@@ -191,13 +191,13 @@ addMonths n date =
 {-| Add a number of whole intervals to a date.
 
     Date.add Week 2 (Date.fromParts 2007 Mar 15 11 55 0 0)
-    -- 29 March 2007, 11:55
+    -- <29 March 2007, 11:55>
 
 When adding Month, Quarter, or Year intervals, day values are clamped at the
 end of the month if necessary.
 
     Date.add Month 1 (Date.fromParts 2000 Jan 31 0 0 0 0)
-    -- 29 February 2000
+    -- <29 February 2000>
 -}
 add : Interval -> Int -> Date -> Date
 add interval n date =
@@ -221,7 +221,7 @@ add interval n date =
 date will be greater than or equal to the one provided.
 
     Date.ceiling Monday (Date.fromParts 1999 Dec 31 23 59 59 999)
-    -- 3 January 2000
+    -- <3 January 2000>
 -}
 ceiling : Interval -> Date -> Date
 ceiling interval date =
@@ -284,7 +284,7 @@ before the second date.
     Date.range Day 2
       (Date.fromParts 2007 Mar 15 11 55 0 0)
       (Date.fromParts 2007 Mar 22 0 0 0 0)
-    -- [ 16 March 2007, 18 March 2007, 20 March 2007 ]
+    -- [<16 March 2007>, <18 March 2007>, <20 March 2007>]
 -}
 range : Interval -> Int -> Date -> Date -> List Date
 range interval step start end =

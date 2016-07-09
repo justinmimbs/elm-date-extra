@@ -27,7 +27,6 @@ import Date.Internal.Format
     Date.toFormattedString
       "EEEE, MMMM d, y 'at' h:mm a"
       (Date.fromParts 2007 Mar 15 13 45 56 67)
-
     -- "Thursday, March 15, 2007 at 1:45 PM"
 
 Each alphabetic character in the pattern represents date or time information;
@@ -42,24 +41,24 @@ Standard #35](http://www.unicode.org/reports/tr35/tr35-43/
 tr35-dates.html#Date_Format_Patterns). Only the following subset of
 formatting characters are available:
 
-    'y' -- year
-    'Y' -- week-numbering year
-    'Q' -- quarter
-    'M' -- month
-    'w' -- week number
-    'd' -- day
-    'D' -- ordinal day
-    'E' -- day of week
-    'e' -- weekday number / day of week
-    'a' -- day period
-    'b' -- day period
-    'h' -- hour (12-hour clock)
-    'H' -- hour (24-hour clock)
-    'm' -- minute
-    's' -- second
-    'S' -- fractional second
-    'X' -- time offset, using "Z" when offset is 0
-    'x' -- time offset
+    "y" -- year
+    "Y" -- week-numbering year
+    "Q" -- quarter
+    "M" -- month
+    "w" -- week number
+    "d" -- day
+    "D" -- ordinal day
+    "E" -- day of week
+    "e" -- weekday number / day of week
+    "a" -- day period (AM, PM)
+    "b" -- day period (am, pm, noon, midnight)
+    "h" -- hour (12-hour clock)
+    "H" -- hour (24-hour clock)
+    "m" -- minute
+    "s" -- second
+    "S" -- fractional second
+    "X" -- time offset, using "Z" when offset is 0
+    "x" -- time offset
 
 The non-standard pattern field "ddd" is available to indicate the day of the
 month with an ordinal suffix (e.g. "1st", "15th"), as the current standard does
@@ -68,7 +67,6 @@ not include such a field.
     Date.toFormattedString
       "MMMM ddd, y"
       (Date.fromParts 2007 Mar 15 13 45 56 67)
-
     -- "March 15th, 2007"
 -}
 toFormattedString : String -> Date -> String
@@ -80,7 +78,6 @@ toFormattedString =
 date and time format with local time offset).
 
     Date.toIsoString (Date.fromParts 2007 Mar 15 13 45 56 67)
-
     -- "2007-03-15T13:45:56.067-04:00"
     -- (example has a local offset of UTC-04:00)
 -}
@@ -101,7 +98,6 @@ toUtcFormattedString =
 8601 (extended date and time format with "Z" for time offset).
 
     Date.toUtcIsoString (Date.fromParts 2007 Mar 15 13 45 56 67)
-
     -- "2007-03-15T17:45:56.067Z"
     -- (example has a local offset of UTC-04:00)
 -}
@@ -114,9 +110,7 @@ toUtcIsoString =
 Julian Dates always represent UTC time.
 
     Date.toJulianDate (Date.fromSpec utc noTime (calendarDate 2000 Jan 1))
-
     -- 2451544.5
-    -- (example has a local offset of UTC+00:00)
 -}
 toJulianDate : Date -> Float
 toJulianDate date =
