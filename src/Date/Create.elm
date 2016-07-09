@@ -57,10 +57,25 @@ fromOffsetTime (offset, time) =
       fromTime <| time - msPerMinute * minutes
 
     Nothing ->
+      -- find the local offset
       let
-        localOffset = offsetFromUtc <| fromTime time
+        offset0 = offsetFromUtc <| fromTime time
+        date1 = fromTime <| time - msPerMinute * offset0
+        offset1 = offsetFromUtc <| date1
       in
-        fromTime <| time - msPerMinute * localOffset
+        if offset0 == offset1 then
+          date1
+        else
+          -- local offset has changed within `offset0` time period (e.g. DST switch)
+          let
+            date2 = fromTime <| time - msPerMinute * offset1
+            offset2 = offsetFromUtc <| date2
+          in
+            if offset1 == offset2 then
+              date2
+            else
+              -- `time` is within the lost hour of a local switch
+              date1
 
 
 {-| Create a `Date` from the following parts, given in local time:

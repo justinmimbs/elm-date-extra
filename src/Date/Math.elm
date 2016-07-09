@@ -22,7 +22,7 @@ module Date.Math exposing (
 -}
 
 
-import Date exposing (Date, Month(..), Day(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
+import Date exposing (Date, Month(..), Day(..), fromTime, toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
 import Date.Facts exposing (daysInMonth, monthFromMonthNumber, weekdayNumberFromDayOfWeek, msPerSecond, msPerMinute, msPerHour, msPerDay)
 import Date.Extract exposing (monthNumber, quarter, weekYear, weekNumber, weekdayNumber, fractionalDay)
 import Date.Create exposing (fromParts, fromCalendarDate)
@@ -205,10 +205,10 @@ add interval n date =
     (y, m, d, hh, mm, ss, ms) = toParts date
   in
     case interval of
-      Millisecond -> fromParts y m d hh mm ss (ms + n)
-      Second      -> fromParts y m d hh mm (ss + n) ms
-      Minute      -> fromParts y m d hh (mm + n) ss ms
-      Hour        -> fromParts y m d (hh + n) mm ss ms
+      Millisecond -> fromTime <| toTime date + (toFloat n)
+      Second      -> fromTime <| toTime date + (toFloat <| n * msPerSecond)
+      Minute      -> fromTime <| toTime date + (toFloat <| n * msPerMinute)
+      Hour        -> fromTime <| toTime date + (toFloat <| n * msPerHour)
       Day         -> fromParts y m (d + n) hh mm ss ms
       Month       -> addMonths n date
       Year        -> addMonths (n * 12) date
