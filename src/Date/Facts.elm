@@ -1,13 +1,34 @@
 module Date.Facts exposing (..)
 
+{-| Basic date information.
+
+# Basics
+@docs isLeapYear, daysInMonth, daysBeforeStartOfMonth, months
+
+# Conversions
+@docs monthNumberFromMonth, monthFromMonthNumber, weekdayNumberFromDayOfWeek, dayOfWeekFromWeekdayNumber
+
+# Constants
+Values for the number of milliseconds per date part. These are equivalent to
+the constants available in the `Time` core library, but typed as integers
+instead of floats.
+@docs msPerSecond, msPerMinute, msPerHour, msPerDay
+-}
+
+
 import Date exposing(Month(..), Day(..))
 
 
+{-|-}
 isLeapYear : Int -> Bool
 isLeapYear y =
   y % 4 == 0 && y % 100 /= 0 || y % 400 == 0
 
 
+{-|
+    daysInMonth 2000 Feb -- 29
+    daysInMonth 2001 Feb -- 28
+-}
 daysInMonth : Int -> Month -> Int
 daysInMonth y m =
   case m of
@@ -25,6 +46,10 @@ daysInMonth y m =
     Dec -> 31
 
 
+{-|
+    daysBeforeStartOfMonth 2000 Mar -- 60
+    daysBeforeStartOfMonth 2001 Mar -- 59
+-}
 daysBeforeStartOfMonth : Int -> Month -> Int
 daysBeforeStartOfMonth y m =
   case m of
@@ -42,11 +67,16 @@ daysBeforeStartOfMonth y m =
     Dec -> if isLeapYear y then 335 else 334
 
 
+{-| An ordered list of `Date.Month` values.
+-}
 months : List Month
 months =
-  [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
+  [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]
 
 
+{-|
+    monthNumberFromMonth Jan -- 1
+-}
 monthNumberFromMonth : Month -> Int
 monthNumberFromMonth m =
   case m of
@@ -64,6 +94,9 @@ monthNumberFromMonth m =
     Dec -> 12
 
 
+{-|
+    monthFromMonthNumber 1 -- Jan
+-}
 monthFromMonthNumber : Int -> Month
 monthFromMonthNumber n =
   case n of
@@ -81,6 +114,9 @@ monthFromMonthNumber n =
     _  -> Dec
 
 
+{-|
+    weekdayNumberFromDayOfWeek Mon -- 1
+-}
 weekdayNumberFromDayOfWeek : Day -> Int
 weekdayNumberFromDayOfWeek d =
   case d of
@@ -93,6 +129,9 @@ weekdayNumberFromDayOfWeek d =
     Sun -> 7
 
 
+{-|
+    dayOfWeekFromWeekdayNumber 1 -- Mon
+-}
 dayOfWeekFromWeekdayNumber : Int -> Day
 dayOfWeekFromWeekdayNumber n =
   case n of
@@ -105,21 +144,25 @@ dayOfWeekFromWeekdayNumber n =
     _ -> Sun
 
 
+{-|-}
 msPerSecond : Int
 msPerSecond =
   1000
 
 
+{-|-}
 msPerMinute : Int
 msPerMinute =
   60 * msPerSecond
 
 
+{-|-}
 msPerHour : Int
 msPerHour =
   60 * msPerMinute
 
 
+{-|-}
 msPerDay : Int
 msPerDay =
   24 * msPerHour
