@@ -1,17 +1,14 @@
 {
     "version": "1.0.1",
-    "summary": "Extra functions for working with Date values",
+    "summary": "Extra functions for working with Date",
     "repository": "https://github.com/justinmimbs/elm-date-extra.git",
     "license": "BSD3",
     "source-directories": [
         "src"
     ],
     "exposed-modules": [
-        "Date.Convert",
-        "Date.Create",
-        "Date.Extract",
-        "Date.Facts",
-        "Date.Math"
+        "Date.Extra",
+        "Date.Extra.Facts"
     ],
     "dependencies": {
         "elm-lang/core": "4.0.1 <= v < 5.0.0"

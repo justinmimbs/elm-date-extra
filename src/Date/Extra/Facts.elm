@@ -1,6 +1,20 @@
-module Date.Facts exposing (..)
+module Date.Extra.Facts exposing (
+  isLeapYear,
+  daysInMonth,
+  daysBeforeStartOfMonth,
+  months,
+  monthNumberFromMonth,
+  monthFromMonthNumber,
+  weekdayNumberFromDayOfWeek,
+  dayOfWeekFromWeekdayNumber,
+  msPerSecond,
+  msPerMinute,
+  msPerHour,
+  msPerDay
+  )
 
-{-| Basic date information.
+{-| This module contains reference information that may be useful when working with
+dates, but it doesn't contain functions for working with the `Date` type directly.
 
 # Basics
 @docs isLeapYear, daysInMonth, daysBeforeStartOfMonth, months
@@ -14,7 +28,6 @@ the constants available in the `Time` core library, but typed as integers
 instead of floats.
 @docs msPerSecond, msPerMinute, msPerHour, msPerDay
 -}
-
 
 import Date exposing(Month(..), Day(..))
 

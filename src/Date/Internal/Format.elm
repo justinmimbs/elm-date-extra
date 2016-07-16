@@ -3,10 +3,10 @@ module Date.Internal.Format exposing (
   )
 
 import Date exposing (Date, Month(..), Day(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
-import Date.Facts exposing (msPerMinute)
-import Date.Extract exposing (monthNumber, quarter, ordinalDay, weekYear, weekNumber, weekdayNumber, offsetFromUtc)
-import String exposing (slice, left, right, padLeft, padRight, toUpper, toLower)
+import Date.Extra.Facts exposing (msPerMinute)
+import Date.Internal.Extract exposing (monthNumber, quarter, ordinalDay, weekYear, weekNumber, weekdayNumber, offsetFromUtc)
 import Regex exposing (Regex, regex, replace, HowMany(..))
+import String exposing (slice, left, right, padLeft, padRight, toUpper, toLower)
 
 
 monthName : Month -> String

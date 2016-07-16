@@ -1,8 +1,8 @@
 module Test.Utilities exposing (..)
 
 import Date exposing (Date, Month, year, month, day, hour, minute, second, millisecond)
-import Date.Extract exposing (offsetFromUtc)
-import Date.Facts exposing (daysInMonth, months, msPerMinute)
+import Date.Extra exposing (offsetFromUtc)
+import Date.Extra.Facts exposing (daysInMonth, months, msPerMinute)
 
 
 type alias DateParts = (Int, Month, Int, Int, Int, Int, Int)

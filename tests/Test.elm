@@ -1,12 +1,11 @@
 module Test exposing (main)
 
+import ElmTest exposing (Test, suite, runSuiteHtml)
+import Test.Convert as Convert
 import Test.Create as Create
+import Test.Examples as Examples
 import Test.Extract as Extract
 import Test.Math as Math
-import Test.Convert as Convert
-import Test.Examples as Examples
-
-import ElmTest exposing (Test, suite, runSuiteHtml)
 
 
 tests : Test

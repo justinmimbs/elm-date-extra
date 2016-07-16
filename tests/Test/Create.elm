@@ -1,12 +1,11 @@
 module Test.Create exposing (tests)
 
-import ElmTest exposing (Test, suite, test, assertEqual, equals)
-import String
-import Regex exposing (Regex, HowMany(All), regex, replace)
-
-import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset, calendarDatesInYear)
 import Date exposing (Date, Month(..))
-import Date.Create exposing (fromParts, fromCalendarDate, fromIsoString, fromSpec, local, offset, utc, noTime, atTime, calendarDate, ordinalDate, weekDate, fromJulianDate)
+import Date.Extra exposing (fromParts, fromCalendarDate, fromIsoString, fromSpec, local, offset, utc, noTime, atTime, calendarDate, ordinalDate, weekDate)
+import ElmTest exposing (Test, suite, test, assertEqual, equals)
+import Regex exposing (Regex, HowMany(All), regex, replace)
+import String
+import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset, calendarDatesInYear)
 
 
 fromPartsTests : Test
@@ -196,20 +195,11 @@ fromSpecTests =
   ]
 
 
-fromJulianDateTests : Test
-fromJulianDateTests =
-  suite "fromJulianDate" [
-    equals (2013, Jan, 1, 0, 30, 0, 0) (toParts <| toUtc <| fromJulianDate (2456293 + 12.5 / 24)),
-    equals (2000, Jan, 1, 0,  0, 0, 0) (toParts <| toUtc <| fromJulianDate 2451544.5)
-  ]
-
-
 tests : Test
 tests =
   suite "Create" [
     fromPartsTests,
     fromCalendarDateTests,
     fromIsoStringTests,
-    fromSpecTests,
-    fromJulianDateTests
+    fromSpecTests
   ]

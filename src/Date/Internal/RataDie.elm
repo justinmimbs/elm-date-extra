@@ -13,7 +13,7 @@ module Date.Internal.RataDie exposing (
   )
 
 import Date exposing (Month)
-import Date.Facts exposing (daysBeforeStartOfMonth, months, msPerDay)
+import Date.Extra.Facts exposing (daysBeforeStartOfMonth, months, msPerDay)
 
 
 find : (a -> Bool) -> List a -> Maybe a

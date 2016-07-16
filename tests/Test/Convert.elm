@@ -1,11 +1,9 @@
 module Test.Convert exposing (tests)
 
+import Date exposing (Date, Month(..))
+import Date.Extra as Date exposing (utc, noTime, atTime, calendarDate, toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString)
 import ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
 import Regex exposing (regex, contains)
-
-import Date exposing (Date, Month(..))
-import Date.Create as Date exposing (utc, noTime, atTime, calendarDate)
-import Date.Convert exposing (toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString, toJulianDate)
 
 
 toFormattedStringTests : Test
@@ -293,24 +291,11 @@ toUtcIsoStringTests =
   ]
 
 
-toJulianDateTests : Test
-toJulianDateTests =
-  suite "toJulianDate" [
-    equals
-      (2456293 + 12.5 / 24)
-      (toJulianDate <| Date.fromSpec utc (atTime 0 30 0 0) (calendarDate 2013 Jan 1)),
-    equals
-      2451544.5
-      (toJulianDate <| Date.fromSpec utc noTime (calendarDate 2000 Jan 1))
-  ]
-
-
 tests : Test
 tests =
   suite "Convert" [
     toFormattedStringTests,
     toIsoStringTests,
     toUtcFormattedStringTests,
-    toUtcIsoStringTests,
-    toJulianDateTests
+    toUtcIsoStringTests
   ]

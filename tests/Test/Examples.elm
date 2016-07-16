@@ -1,13 +1,9 @@
 module Test.Examples exposing (tests)
 
-import ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
-
-import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset)
 import Date exposing (Date, Month(..))
-import Date.Create as Date exposing (utc, offset, local, noTime, atTime, calendarDate, weekDate, ordinalDate)
-import Date.Convert as Date
-import Date.Extract as Date
-import Date.Math as Date exposing (Interval(..))
+import Date.Extra as Date exposing (Interval(..), utc, offset, local, noTime, atTime, calendarDate, weekDate, ordinalDate)
+import ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
+import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset)
 
 
 convertTests : Test
@@ -33,13 +29,7 @@ convertTests =
       (
         Date.toUtcIsoString (Date.fromSpec (offset -240) (atTime 13 45 56 67) (calendarDate 2007 Mar 15 ))
       )
-      "2007-03-15T17:45:56.067Z",
-
-    equals
-      (
-        Date.toJulianDate (Date.fromSpec utc noTime (calendarDate 2000 Jan 1))
-      )
-      2451544.5
+      "2007-03-15T17:45:56.067Z"
     ]
 
 
@@ -103,7 +93,7 @@ createTests =
 
     equals
       (
-        Date.fromIsoString "1/1/2001"
+        Date.fromIsoString "1/1/2000"
       )
       Nothing,
 
@@ -135,14 +125,7 @@ createTests =
           (ordinalDate 2016 218)
         |> toUtcDateTimeString
       )
-      "<5 August 2016, 23:00, UTC>",
-
-    equals
-      (
-        Date.fromJulianDate 2456293.52083333
-        |> toUtcDateTimeString
-      )
-      "<1 January 2013, 00:30, UTC>"
+      "<5 August 2016, 23:00, UTC>"
   ]
 
 

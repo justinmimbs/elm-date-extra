@@ -9,7 +9,7 @@ module Date.Internal.Core exposing (
   )
 
 import Date exposing (Month)
-import Date.Facts exposing (daysBeforeStartOfMonth, months, msPerSecond, msPerMinute, msPerHour, msPerDay)
+import Date.Extra.Facts exposing (daysBeforeStartOfMonth, months, msPerSecond, msPerMinute, msPerHour, msPerDay)
 import Date.Internal.RataDie as RataDie
 
 

@@ -1,18 +1,26 @@
 # elm-date-extra
 
-Extra functions for working with `Date` values in Elm.
+Extra functions for working with the `Date` type from Elm's core library.
 
-This package is organized into the following modules. Only examples of common
-uses are given below; see the [docs](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/1.0.1)
+## Installation
+
+```sh
+elm-package install justinmimbs/elm-date-extra
+```
+
+## Common Usage
+
+Only examples of common uses are given below; see the
+[docs](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/latest)
 for the full API.
 
-## Date.Create
+### Create
 
 Create dates from parts.
 
 ```elm
 import Date exposing (Month(..))
-import Date.Create as Date
+import Date.Extra as Date
 
 Date.fromParts 1999 Dec 31 23 59 0 0
 -- <31 December 1999, 23:59, local time>
@@ -35,16 +43,12 @@ Date.fromIsoString "1/1/2001"
 -- Nothing
 ```
 
-## Date.Convert
+### Format
 
 Convert dates to formatted strings, using templates based on Date Format
 Patterns in [Unicode Technical Standard #35](http://www.unicode.org/reports/tr35/tr35-43/tr35-dates.html#Date_Format_Patterns).
 
 ```elm
-import Date exposing (Month(..))
-import Date.Create as Date
-import Date.Convert as Date
-
 date = Date.fromParts 2007 Mar 15 13 45 56 67
 
 Date.toFormattedString "EEEE, MMMM d, y 'at' h:mm a" date
@@ -55,14 +59,13 @@ Date.toUtcIsoString date
 -- (example has a local offset of UTC-04:00)
 ```
 
-## Date.Math
+### Operate
 
 Operate on the numeric properties of dates.
 
 ```elm
 import Date exposing (Month(..))
-import Date.Create as Date
-import Date.Math as Date exposing (Interval(..))
+import Date.Extra as Date exposing (Interval(..))
 
 date = Date.fromParts 1999 Dec 31 23 59 59 999
 
@@ -84,13 +87,3 @@ Date.range Monday 1
   (Date.ceiling Month date) -- <1 January 2000>
 -- [<6 December 1999>, <13 December 1999>, <20 December 1999>, <27 December 1999>]
 ```
-
-## Date.Extract
-
-This module provides additional extractions to those available in the
-core `Date` library.
-
-## Date.Facts
-
-This module contains basic date information, like functions to convert between
-`Date.Month` values and month numbers as integers.

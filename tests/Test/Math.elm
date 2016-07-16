@@ -1,11 +1,9 @@
 module Test.Math exposing (tests)
 
-import ElmTest exposing (Test, suite, equals, defaultTest, assert)
-
-import Test.Utilities exposing (DateParts, toParts)
 import Date exposing (Date, Month(..))
-import Date.Create exposing (fromParts)
-import Date.Math as Date exposing (Interval(..))
+import Date.Extra as Date exposing (Interval(..), fromParts)
+import ElmTest exposing (Test, suite, equals, defaultTest, assert)
+import Test.Utilities exposing (DateParts, toParts)
 
 
 equalTests : Test
