@@ -128,14 +128,14 @@ fromOffsetTime (offset, time) =
 
 
     import Date exposing (Month(..))
-    import Date.Create as Date
+    import Date.Extra as Date
 
     Date.fromParts 1999 Dec 31 23 59 0 0
     -- <31 December 1999, 23:59, local time>
 
 The values of the parts are not checked to ensure a valid date representation,
-nor are they clamped to valid range; instead, providing values outside a valid
-range results in underflow or overflow.
+nor are they clamped to a valid range; instead, providing values outside a
+valid range results in underflow or overflow.
 
     Date.fromParts 2007 Feb 29 0 0 0 0
     -- <1 March 2007>
@@ -464,8 +464,9 @@ isBetween date1 date2 date =
   comparableIsBetween (toTime date1) (toTime date2) (toTime date)
 
 
-{-| Clamp a date within a given range. The expression `Date.clamp a b x`
-clamps `x` between `a` and `b`.
+{-| Clamp a date within a given range. The expression `Date.clamp min max x`
+returns one of `min`, `max`, or `x`, ensuring the returned date is not before
+`min` and not after `max`.
 -}
 clamp : Date -> Date -> Date -> Date
 clamp min max date =

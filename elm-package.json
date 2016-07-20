@@ -1,5 +1,5 @@
 {
-    "version": "1.0.1",
+    "version": "2.0.0",
     "summary": "Extra functions for working with Date",
     "repository": "https://github.com/justinmimbs/elm-date-extra.git",
     "license": "BSD3",

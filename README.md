@@ -8,7 +8,7 @@ Extra functions for working with the `Date` type from Elm's core library.
 elm-package install justinmimbs/elm-date-extra
 ```
 
-## Common Usage
+## Examples
 
 Only examples of common uses are given below; see the
 [docs](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/latest)
@@ -39,7 +39,7 @@ Date.fromIsoString "2009-W01-1T00Z"
 Date.fromIsoString "2016-218T20:00-03:00"
 -- Just <5 August 2016, 23:00, UTC>
 
-Date.fromIsoString "1/1/2001"
+Date.fromIsoString "1/1/2000"
 -- Nothing
 ```
 
