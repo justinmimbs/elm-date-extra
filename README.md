@@ -11,7 +11,7 @@ elm-package install justinmimbs/elm-date-extra
 ## Examples
 
 Only examples of common uses are given below; see the
-[docs](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/latest)
+[docs](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/latest/Date-Extra)
 for the full API.
 
 ### Create
