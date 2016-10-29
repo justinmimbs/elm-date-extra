@@ -1,15 +1,15 @@
-module Date.Internal.RataDie exposing (
-  fromOrdinalDate,
-  fromCalendarDate,
-  fromWeekDate,
-  year,
-  month,
-  day,
-  ordinalDay,
-  weekdayNumber,
-  weekNumber,
-  weekYear,
-  toUnixTime
+module Date.Internal.RataDie exposing
+  ( fromOrdinalDate
+  , fromCalendarDate
+  , fromWeekDate
+  , year
+  , month
+  , day
+  , ordinalDay
+  , weekdayNumber
+  , weekNumber
+  , weekYear
+  , toUnixTime
   )
 
 import Date exposing (Month)
@@ -19,8 +19,10 @@ import Date.Extra.Facts exposing (daysBeforeStartOfMonth, months, msPerDay)
 find : (a -> Bool) -> List a -> Maybe a
 find pred list =
   case list of
-    [] -> Nothing
-    x::xs -> if pred x then Just x else find pred xs
+    [] ->
+      Nothing
+    x::xs ->
+      if pred x then Just x else find pred xs
 
 
 -- integer division returning (Quotient, Remainder)
@@ -96,7 +98,9 @@ month rd =
     y = year rd
     od = ordinalDay rd
   in
-    List.reverse months |> find (\m -> daysBeforeStartOfMonth y m < od) |> Maybe.withDefault Date.Jan
+    List.reverse months
+      |> find (\m -> daysBeforeStartOfMonth y m < od)
+      |> Maybe.withDefault Date.Jan
 
 
 day : RataDie -> Int
@@ -135,7 +139,7 @@ week1Day1OfWeekYear y =
 weekNumber: RataDie -> Int
 weekNumber rd =
   let
-    week1Day1RD = week1Day1OfWeekYear <| weekYear rd
+    week1Day1RD = week1Day1OfWeekYear (weekYear rd)
   in
     (rd - week1Day1RD) // 7 + 1
 

@@ -1,6 +1,5 @@
-module Date.Internal.Format exposing (
-  toFormattedString
-  )
+module Date.Internal.Format exposing
+  ( toFormattedString )
 
 import Date exposing (Date, Month(..), Day(..), year, month, day, hour, minute, second, millisecond, dayOfWeek)
 import Date.Extra.Facts exposing (msPerMinute)
@@ -103,7 +102,6 @@ formatTimeOffset separator minutesOptional offset =
 
 -- Formatting is based on Date Format Patterns in Unicode Technical Standard #35
 
-
 {- Matches a series of pattern characters, or a single-quoted string (which
 may contain '' inside, representing an escaped single-quote).
 -}
@@ -124,8 +122,8 @@ nameForm length =
     _ -> "invalid"
 
 
-f : Bool -> Date -> String -> String
-f asUtc date match =
+format : Bool -> Date -> String -> String
+format asUtc date match =
   let
     char = left 1 match
     length = String.length match
@@ -183,7 +181,7 @@ f asUtc date match =
         case length of
           1 -> weekdayNumber date |> toString
           2 -> weekdayNumber date |> toString
-          _ -> f asUtc date (toUpper match)
+          _ -> format asUtc date (toUpper match)
       "a" ->
         let
           p = dayPeriod date
@@ -242,7 +240,7 @@ f asUtc date match =
         if length < 4 && (asUtc || offsetFromUtc date == 0) then
           "Z"
         else
-          f asUtc date (toLower match)
+          format asUtc date (toLower match)
       "x" ->
         let
           offset = if asUtc then 0 else offsetFromUtc date
@@ -269,6 +267,6 @@ toUtc date =
 toFormattedString : Bool -> String -> Date -> String
 toFormattedString asUtc pattern date =
   let
-    date' = if asUtc then toUtc date else date
+    date_ = if asUtc then toUtc date else date
   in
-    replace All patternMatches (\{ match } -> f asUtc date' match) pattern
+    replace All patternMatches (.match >> format asUtc date_) pattern

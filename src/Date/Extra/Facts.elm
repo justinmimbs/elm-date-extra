@@ -1,16 +1,16 @@
-module Date.Extra.Facts exposing (
-  isLeapYear,
-  daysInMonth,
-  daysBeforeStartOfMonth,
-  months,
-  monthNumberFromMonth,
-  monthFromMonthNumber,
-  weekdayNumberFromDayOfWeek,
-  dayOfWeekFromWeekdayNumber,
-  msPerSecond,
-  msPerMinute,
-  msPerHour,
-  msPerDay
+module Date.Extra.Facts exposing
+  ( isLeapYear
+  , daysInMonth
+  , daysBeforeStartOfMonth
+  , months
+  , monthNumberFromMonth
+  , monthFromMonthNumber
+  , weekdayNumberFromDayOfWeek
+  , dayOfWeekFromWeekdayNumber
+  , msPerSecond
+  , msPerMinute
+  , msPerHour
+  , msPerDay
   )
 
 {-| This module contains reference information that may be useful when working with
@@ -84,7 +84,7 @@ daysBeforeStartOfMonth y m =
 -}
 months : List Month
 months =
-  [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]
+  [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
 
 
 {-|

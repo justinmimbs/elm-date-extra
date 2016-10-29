@@ -1,12 +1,12 @@
-module Date.Internal.Extract exposing (
-  monthNumber,
-  quarter,
-  ordinalDay,
-  fractionalDay,
-  weekdayNumber,
-  weekNumber,
-  weekYear,
-  offsetFromUtc
+module Date.Internal.Extract exposing
+  ( monthNumber
+  , quarter
+  , ordinalDay
+  , fractionalDay
+  , weekdayNumber
+  , weekNumber
+  , weekYear
+  , offsetFromUtc
   )
 
 import Date exposing (Date, Month(..), toTime, year, month, day, hour, minute, second, millisecond, dayOfWeek)
@@ -15,8 +15,8 @@ import Date.Internal.Core exposing (unixTimeFromParts, weekYearFromCalendarDate,
 
 
 monthNumber : Date -> Int
-monthNumber date =
-  monthNumberFromMonth <| month date
+monthNumber =
+  monthNumberFromMonth << month
 
 
 quarter : Date -> Int
@@ -38,8 +38,8 @@ fractionalDay date =
 
 
 weekdayNumber : Date -> Int
-weekdayNumber date =
-  weekdayNumberFromDayOfWeek <| dayOfWeek date
+weekdayNumber =
+  weekdayNumberFromDayOfWeek << dayOfWeek
 
 
 weekNumber : Date -> Int

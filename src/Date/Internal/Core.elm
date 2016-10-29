@@ -1,11 +1,11 @@
-module Date.Internal.Core exposing (
-  unixTimeFromParts,
-  unixTimeFromCalendarDate,
-  unixTimeFromWeekDate,
-  unixTimeFromOrdinalDate,
-  msFromTimeParts,
-  weekYearFromCalendarDate,
-  weekNumberFromCalendarDate
+module Date.Internal.Core exposing
+  ( unixTimeFromParts
+  , unixTimeFromCalendarDate
+  , unixTimeFromWeekDate
+  , unixTimeFromOrdinalDate
+  , msFromTimeParts
+  , weekYearFromCalendarDate
+  , weekNumberFromCalendarDate
   )
 
 import Date exposing (Month)

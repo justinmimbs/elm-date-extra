@@ -1,6 +1,5 @@
-module Date.Internal.Parse exposing (
-  offsetTimeFromIsoString
-  )
+module Date.Internal.Parse exposing
+  ( offsetTimeFromIsoString )
 
 import Date exposing (Date, Month)
 import Date.Extra.Facts exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
@@ -24,13 +23,13 @@ infixl 9 ?
 
 
 stringToInt : String -> Maybe Int
-stringToInt s =
-  String.toInt s |> Result.toMaybe
+stringToInt =
+  String.toInt >> Result.toMaybe
 
 
 stringToFloat : String -> Maybe Float
-stringToFloat s =
-  String.toFloat s |> Result.toMaybe
+stringToFloat =
+  String.toFloat >> Result.toMaybe
 
 
 isoDateRegex : Regex
@@ -68,7 +67,7 @@ offsetTimeFromIsoString s =
 offsetTimeFromMatches : List (Maybe String) -> Maybe (Maybe Int, Int)
 offsetTimeFromMatches matches =
   case matches of
-    [Just yyyy, _, calMM, calDD, _, weekWW, weekD, ordDDD, timeHH, _, timeMM, timeSS, timeF, tzZ, tzSign, tzHH, tzMM] ->
+    [ Just yyyy, _, calMM, calDD, _, weekWW, weekD, ordDDD, timeHH, _, timeMM, timeSS, timeF, tzZ, tzSign, tzHH, tzMM ] ->
       let
         dateMS = unixTimeFromMatches yyyy calMM calDD weekWW weekD ordDDD
         timeMS = msFromMatches timeHH timeMM timeSS timeF
@@ -106,12 +105,12 @@ unixTimeFromMatches yyyy calMM calDD weekWW weekD ordDDD =
 msFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
 msFromMatches timeHH timeMM timeSS timeF =
   let
-    f = (timeF >>= stringToFloat) ? 0.0
+    fractional = (timeF >>= stringToFloat) ? 0.0
     (hh, mm, ss) =
-      case List.map (\m -> m >>= stringToFloat) [timeHH, timeMM, timeSS] of
-        [Just hh, Just mm, Just ss] -> (hh, mm, ss + f)
-        [Just hh, Just mm, Nothing] -> (hh, mm + f, 0.0)
-        [Just hh, Nothing, Nothing] -> (hh + f, 0.0, 0.0)
+      case [ timeHH, timeMM, timeSS ] |> List.map ((flip Maybe.andThen) stringToFloat) of
+        [ Just hh, Just mm, Just ss ] -> (hh, mm, ss + fractional)
+        [ Just hh, Just mm, Nothing ] -> (hh, mm + fractional, 0.0)
+        [ Just hh, Nothing, Nothing ] -> (hh + fractional, 0.0, 0.0)
         _ -> (0.0, 0.0, 0.0)
   in
     hh * toFloat msPerHour

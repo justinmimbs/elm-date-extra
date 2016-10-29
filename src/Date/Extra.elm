@@ -1,37 +1,37 @@
-module Date.Extra exposing (
-  fromParts,
-  fromCalendarDate,
-  fromIsoString,
-  TimeZone, utc, offset, local,
-  TimeSpec, noTime, atTime,
-  DateSpec, calendarDate, ordinalDate, weekDate,
-  fromSpec,
+module Date.Extra exposing
+  ( fromParts
+  , fromCalendarDate
+  , fromIsoString
+  , TimeZone, utc, offset, local
+  , TimeSpec, noTime, atTime
+  , DateSpec, calendarDate, ordinalDate, weekDate
+  , fromSpec
 
-  toFormattedString,
-  toIsoString,
-  toUtcFormattedString,
-  toUtcIsoString,
+  , toFormattedString
+  , toIsoString
+  , toUtcFormattedString
+  , toUtcIsoString
 
-  monthNumber,
-  quarter,
-  ordinalDay,
-  fractionalDay,
-  weekdayNumber,
-  weekNumber,
-  weekYear,
-  offsetFromUtc,
+  , monthNumber
+  , quarter
+  , ordinalDay
+  , fractionalDay
+  , weekdayNumber
+  , weekNumber
+  , weekYear
+  , offsetFromUtc
 
-  equal,
-  compare,
-  isBetween,
-  clamp,
-  Interval(..),
-  equalBy,
-  floor,
-  ceiling,
-  add,
-  diff,
-  range
+  , equal
+  , compare
+  , isBetween
+  , clamp
+  , Interval(..)
+  , equalBy
+  , floor
+  , ceiling
+  , add
+  , diff
+  , range
   )
 
 {-| A `Date` represents a moment in time, encoded by two essential pieces of
@@ -175,8 +175,8 @@ its extractions still reflect the current machine's local time, and
 `Date.toTime` still reflects its UTC time.
 -}
 fromIsoString : String -> Maybe Date
-fromIsoString s =
-  Maybe.map fromOffsetTime <| offsetTimeFromIsoString s
+fromIsoString =
+  offsetTimeFromIsoString >> Maybe.map fromOffsetTime
 
 
 {-| Represents a time zone.
@@ -589,11 +589,11 @@ addMonths n date =
   let
     (y, m, d, hh, mm, ss, ms) = toParts date
     om = ordinalMonth date + n + -1
-    y' = om // 12
-    m' = om % 12 + 1 |> monthFromMonthNumber
-    d' = Basics.min d (daysInMonth y' m')
+    y_ = om // 12
+    m_ = om % 12 + 1 |> monthFromMonthNumber
+    d_ = Basics.min d (daysInMonth y_ m_)
   in
-    fromParts y' m' d' hh mm ss ms
+    fromParts y_ m_ d_ hh mm ss ms
 
 
 {-| Add a number of whole intervals to a date.
@@ -646,11 +646,11 @@ diffMonth date1 date2 =
     fractionalMonth date =
       ((day date - 1 |> toFloat) + fractionalDay date) / 31
 
-    ordinalMonth' : Date -> Float
-    ordinalMonth' date =
+    ordinalMonthFloat : Date -> Float
+    ordinalMonthFloat date =
       (ordinalMonth date |> toFloat) + fractionalMonth date
   in
-    ordinalMonth' date2 - ordinalMonth' date1 |> truncate
+    ordinalMonthFloat date2 - ordinalMonthFloat date1 |> truncate
 
 
 {-| Find the difference, as a number of whole intervals, between two dates.
@@ -681,8 +681,10 @@ diff interval date1 date2 =
 unfold : (b -> Maybe (a, b)) -> b -> List a
 unfold f seed =
   case f seed of
-    Nothing -> []
-    Just (x, nextSeed) -> x :: unfold f nextSeed
+    Nothing ->
+      []
+    Just (x, nextSeed) ->
+      x :: unfold f nextSeed
 
 
 {-| Create a list of dates, at rounded intervals, increasing by a step value,
@@ -704,4 +706,4 @@ range interval step start end =
       else
         Just (date, add interval (max 1 step) date)
   in
-    unfold next <| ceiling interval start
+    ceiling interval start |> unfold next
