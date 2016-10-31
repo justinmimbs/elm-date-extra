@@ -5,7 +5,8 @@ import Date.Extra exposing (offsetFromUtc)
 import Date.Extra.Facts exposing (daysInMonth, months, msPerMinute)
 
 
-type alias DateParts = (Int, Month, Int, Int, Int, Int, Int)
+type alias DateParts =
+  (Int, Month, Int, Int, Int, Int, Int)
 
 
 toParts : Date -> DateParts
@@ -25,8 +26,9 @@ toUtc date =
 
 calendarDatesInMonth : Int -> Month -> List (Int, Month, Int)
 calendarDatesInMonth y m =
-  [ 1 .. (daysInMonth y m) ]
-    |> List.map ((,,) y m)
+  List.map
+    ((,,) y m)
+    [ 1 .. (daysInMonth y m) ]
 
 
 calendarDatesInYear : Int -> List (Int, Month, Int)

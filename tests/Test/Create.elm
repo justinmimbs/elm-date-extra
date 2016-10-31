@@ -11,13 +11,13 @@ import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset, calenda
 fromPartsTests : Test
 fromPartsTests =
   let
-    partsList = [
-      (1969, Dec, 31, 23, 59, 59, 999),
-      (1970, Jan,  1,  0,  0,  0,   0),
-      (1999, Dec, 31, 23, 59, 59, 999),
-      (2000, Jan,  1,  0,  0,  0,   0),
-      (2008, Dec, 31, 20, 30, 40, 567)
-    ]
+    partsList =
+      [ (1969, Dec, 31, 23, 59, 59, 999)
+      , (1970, Jan,  1,  0,  0,  0,   0)
+      , (1999, Dec, 31, 23, 59, 59, 999)
+      , (2000, Jan,  1,  0,  0,  0,   0)
+      , (2008, Dec, 31, 20, 30, 40, 567)
+      ]
 
     fromPartsTest : DateParts -> Test
     fromPartsTest (y, m, d, hh, mm, ss, ms) =
@@ -45,34 +45,34 @@ fromCalendarDateTests =
 fromIsoStringTests : Test
 fromIsoStringTests =
   let
-    extendedDatePairs = [
-      ("2008",       (2008, Jan,  1)),
-      ("2008-12",    (2008, Dec,  1)),
-      ("2008-12-31", (2008, Dec, 31)),
-      ("2009-W01",   (2008, Dec, 29)),
-      ("2009-W01-4", (2009, Jan,  1)),
-      ("2008-061",   (2008, Mar,  1))
-    ]
+    extendedDatePairs =
+      [ ("2008",       (2008, Jan,  1))
+      , ("2008-12",    (2008, Dec,  1))
+      , ("2008-12-31", (2008, Dec, 31))
+      , ("2009-W01",   (2008, Dec, 29))
+      , ("2009-W01-4", (2009, Jan,  1))
+      , ("2008-061",   (2008, Mar,  1))
+      ]
 
-    extendedTimePairs = [
-      ("",              ( 0,  0,  0,   0)),
-      ("T00",           ( 0,  0,  0,   0)),
-      ("T20",           (20,  0,  0,   0)),
-      ("T20.75",        (20, 45,  0,   0)),
-      ("T20.7583333",   (20, 45, 30,   0)),
-      ("T20.75835",     (20, 45, 30,  60)),
-      ("T20:00",        (20,  0,  0,   0)),
-      ("T20:30",        (20, 30,  0,   0)),
-      ("T20:30.75",     (20, 30, 45,   0)),
-      ("T20:30.75833",  (20, 30, 45, 500)),
-      ("T20:30:00",     (20, 30,  0,   0)),
-      ("T20:30:40",     (20, 30, 40,   0)),
-      ("T20:30:40.007", (20, 30, 40,   7)),
-      ("T20:30:40.067", (20, 30, 40,  67)),
-      ("T20:30:40.5",   (20, 30, 40, 500)),
-      ("T20:30:40.56",  (20, 30, 40, 560)),
-      ("T20:30:40.567", (20, 30, 40, 567))
-    ]
+    extendedTimePairs =
+      [ ("",              ( 0,  0,  0,   0))
+      , ("T00",           ( 0,  0,  0,   0))
+      , ("T20",           (20,  0,  0,   0))
+      , ("T20.75",        (20, 45,  0,   0))
+      , ("T20.7583333",   (20, 45, 30,   0))
+      , ("T20.75835",     (20, 45, 30,  60))
+      , ("T20:00",        (20,  0,  0,   0))
+      , ("T20:30",        (20, 30,  0,   0))
+      , ("T20:30.75",     (20, 30, 45,   0))
+      , ("T20:30.75833",  (20, 30, 45, 500))
+      , ("T20:30:00",     (20, 30,  0,   0))
+      , ("T20:30:40",     (20, 30, 40,   0))
+      , ("T20:30:40.007", (20, 30, 40,   7))
+      , ("T20:30:40.067", (20, 30, 40,  67))
+      , ("T20:30:40.5",   (20, 30, 40, 500))
+      , ("T20:30:40.56",  (20, 30, 40, 560))
+      , ("T20:30:40.567", (20, 30, 40, 567))
+      ]
 
     basicFromExtended : Regex -> (String, a) -> Maybe (String, a)
     basicFromExtended symbol (extended, parts) =
@@ -112,94 +112,92 @@ fromIsoStringTests =
       test string <| assertEqual expected <| Maybe.map toDateParts <| fromIsoString string
 
   in
-    suite "fromIsoString" [
-      suite "local" <|
-        List.map (fromIsoStringTest toParts)
-        dateAndDateTimePairs,
+    suite "fromIsoString"
+      [ suite "local" <|
+          List.map (fromIsoStringTest toParts)
+          dateAndDateTimePairs
 
-      suite "utc" <|
-        List.map (fromIsoStringTest (toParts << toUtc)) <|
-        List.concatMap dateTimePairsWithOffset
-        [
-          "+00:00",
-          "+0000",
-          "+00",
-          "Z"
-        ],
+      , suite "utc" <|
+          List.map (fromIsoStringTest (toParts << toUtc)) <|
+          List.concatMap dateTimePairsWithOffset
+            [ "+00:00"
+            , "+0000"
+            , "+00"
+            , "Z"
+            ]
 
-      suite "offset -07:00" <|
-        List.map (fromIsoStringTest (toParts << (toTimeOffset -420))) <|
-        List.concatMap dateTimePairsWithOffset
-        [
-          "-07:00",
-          "-0700",
-          "-07"
-        ],
+      , suite "offset -07:00" <|
+          List.map (fromIsoStringTest (toParts << (toTimeOffset -420))) <|
+          List.concatMap dateTimePairsWithOffset
+            [ "-07:00"
+            , "-0700"
+            , "-07"
+            ]
 
-      suite "offset +04:30" <|
-        List.map (fromIsoStringTest (toParts << (toTimeOffset 270))) <|
-        List.concatMap dateTimePairsWithOffset
-        [
-          "+04:30",
-          "+0430"
-        ],
+      , suite "offset +04:30" <|
+          List.map (fromIsoStringTest (toParts << (toTimeOffset 270))) <|
+          List.concatMap dateTimePairsWithOffset
+            [ "+04:30"
+            , "+0430"
+            ]
 
-      suite "invalid" <|
-        List.map (fromIsoStringTest toParts)
-        [
-          ("2008-1231",          Nothing),
-          ("200812-31",          Nothing),
-          ("2008-W014",          Nothing),
-          ("2008W01-4",          Nothing),
-          ("2008-W01-04",        Nothing),
-          ("2008-12-31T20:3040", Nothing),
-          ("2008-12-31T2030:40", Nothing),
-          ("2008-12-31Z",        Nothing),
-          ("2008-12Z",           Nothing),
-          ("2008Z",              Nothing),
-          ("2008-12-31+00:00",   Nothing),
-          ("2008-12-31-07:00",   Nothing),
-          ("2008-12-07:00",      Nothing),
-          ("2008-07:00",         Nothing)
-        ]
-    ]
+      , suite "invalid" <|
+          List.map (fromIsoStringTest toParts)
+            [ ("2008-1231",          Nothing)
+            , ("200812-31",          Nothing)
+            , ("2008-W014",          Nothing)
+            , ("2008W01-4",          Nothing)
+            , ("2008-W01-04",        Nothing)
+            , ("2008-12-31T20:3040", Nothing)
+            , ("2008-12-31T2030:40", Nothing)
+            , ("2008-12-31Z",        Nothing)
+            , ("2008-12Z",           Nothing)
+            , ("2008Z",              Nothing)
+            , ("2008-12-31+00:00",   Nothing)
+            , ("2008-12-31-07:00",   Nothing)
+            , ("2008-12-07:00",      Nothing)
+            , ("2008-07:00",         Nothing)
+            ]
+      ]
 
 
 fromSpecTests : Test
 fromSpecTests =
-  suite "fromSpec" [
-    suite "local" [
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (calendarDate 2008 Dec 31)),
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (ordinalDate 2008 366)),
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (weekDate 2009 1 3)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (calendarDate 2008 Dec 31)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (ordinalDate 2008 366)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (weekDate 2009 1 3))
-    ],
-    suite "utc" [
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (calendarDate 2008 Dec 31)),
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (ordinalDate 2008 366)),
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (weekDate 2009 1 3)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (calendarDate 2008 Dec 31)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (ordinalDate 2008 366)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (weekDate 2009 1 3))
-    ],
-    suite "offset" [
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (calendarDate 2008 Dec 31)),
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (ordinalDate 2008 366)),
-      equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (weekDate 2009 1 3)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) (atTime 20 30 40 567) (calendarDate 2008 Dec 31)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) (atTime 20 30 40 567) (ordinalDate 2008 366)),
-      equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) (atTime 20 30 40 567) (weekDate 2009 1 3))
+  suite "fromSpec"
+    [ suite "local"
+        [ equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (calendarDate 2008 Dec 31))
+        , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (ordinalDate 2008 366))
+        , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (weekDate 2009 1 3))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (calendarDate 2008 Dec 31))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (ordinalDate 2008 366))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (weekDate 2009 1 3))
+        ]
+
+    , suite "utc"
+        [ equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (calendarDate 2008 Dec 31))
+        , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (ordinalDate 2008 366))
+        , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (weekDate 2009 1 3))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (calendarDate 2008 Dec 31))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (ordinalDate 2008 366))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (weekDate 2009 1 3))
+        ]
+
+    , suite "offset"
+        [ equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (calendarDate 2008 Dec 31))
+        , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (ordinalDate 2008 366))
+        , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (weekDate 2009 1 3))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) (atTime 20 30 40 567) (calendarDate 2008 Dec 31))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) (atTime 20 30 40 567) (ordinalDate 2008 366))
+        , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) (atTime 20 30 40 567) (weekDate 2009 1 3))
+        ]
     ]
-  ]
 
 
 tests : Test
 tests =
-  suite "Create" [
-    fromPartsTests,
-    fromCalendarDateTests,
-    fromIsoStringTests,
-    fromSpecTests
-  ]
+  suite "Create"
+    [ fromPartsTests
+    , fromCalendarDateTests
+    , fromIsoStringTests
+    , fromSpecTests
+    ]
