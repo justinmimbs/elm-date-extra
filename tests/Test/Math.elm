@@ -2,7 +2,7 @@ module Test.Math exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (Interval(..), fromParts)
-import ElmTest exposing (Test, suite, equals, defaultTest, assert)
+import Legacy.ElmTest exposing (Test, suite, equals, defaultTest, assert)
 import Test.Utilities exposing (DateParts, toParts)
 
 

@@ -3,7 +3,7 @@ module Test.Extract exposing (tests)
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (monthNumber, quarter, ordinalDay, fractionalDay, weekYear, weekNumber, weekdayNumber)
 import Date.Extra.Facts exposing (months)
-import ElmTest exposing (Test, suite, test, equals, assert)
+import Legacy.ElmTest exposing (Test, suite, test, equals, assert)
 import Test.Utilities exposing (calendarDatesInMonth)
 
 

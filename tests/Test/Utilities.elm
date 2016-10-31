@@ -25,9 +25,8 @@ toUtc date =
 
 calendarDatesInMonth : Int -> Month -> List (Int, Month, Int)
 calendarDatesInMonth y m =
-  List.map (\d ->
-    (y, m, d)
-  ) [ 1 .. (daysInMonth y m) ]
+  [ 1 .. (daysInMonth y m) ]
+    |> List.map ((,,) y m)
 
 
 calendarDatesInYear : Int -> List (Int, Month, Int)

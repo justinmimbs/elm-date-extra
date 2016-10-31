@@ -2,7 +2,7 @@ module Test.Examples exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (Interval(..), utc, offset, local, noTime, atTime, calendarDate, weekDate, ordinalDate)
-import ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
+import Legacy.ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
 import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset)
 
 

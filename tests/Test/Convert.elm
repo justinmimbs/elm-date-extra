@@ -2,7 +2,7 @@ module Test.Convert exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (utc, noTime, atTime, calendarDate, toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString)
-import ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
+import Legacy.ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
 import Regex exposing (regex, contains)
 
 
