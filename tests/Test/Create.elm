@@ -2,10 +2,10 @@ module Test.Create exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra exposing (fromParts, fromCalendarDate, fromIsoString, fromSpec, local, offset, utc, noTime, atTime, calendarDate, ordinalDate, weekDate)
-import Legacy.ElmTest exposing (Test, suite, test, assertEqual, equals)
 import Regex exposing (Regex, HowMany(All), regex, replace)
 import String
-import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset, calendarDatesInYear)
+import Test exposing (Test, describe, test)
+import Test.Utilities exposing (equals, DateParts, toParts, toUtc, toTimeOffset, calendarDatesInYear)
 
 
 fromPartsTests : Test
@@ -20,11 +20,15 @@ fromPartsTests =
       ]
 
     fromPartsTest : DateParts -> Test
-    fromPartsTest (y, m, d, hh, mm, ss, ms) =
-      equals (y, m, d, hh, mm, ss, ms) (toParts (fromParts y m d hh mm ss ms))
+    fromPartsTest ((y, m, d, hh, mm, ss, ms) as parts) =
+      equals
+        parts
+        (toParts (fromParts y m d hh mm ss ms))
   in
-    suite "fromParts" <|
-      List.map fromPartsTest partsList
+    describe "fromParts" <|
+      List.map
+        fromPartsTest
+        partsList
 
 
 fromCalendarDateTests : Test
@@ -32,14 +36,20 @@ fromCalendarDateTests =
   let
     calendarDates : List (Int, Month, Int)
     calendarDates =
-      List.concatMap calendarDatesInYear <| List.concat [ [ 1897 .. 1905 ], [ 1967 .. 1975 ], [ 1997 .. 2020 ] ]
+      List.concatMap
+        calendarDatesInYear
+        (List.concat [ [ 1897 .. 1905 ], [ 1967 .. 1975 ], [ 1997 .. 2020 ] ])
 
     calendarDateTest : (Int, Month, Int) -> Test
     calendarDateTest (y, m, d) =
-      equals (y, m, d, 0, 0, 0, 0) (toParts (fromCalendarDate y m d))
+      equals
+        (y, m, d, 0, 0, 0, 0)
+        (toParts (fromCalendarDate y m d))
   in
-    suite "fromCalendarDate" <|
-      List.map calendarDateTest calendarDates
+    describe "fromCalendarDate" <|
+      List.map
+        calendarDateTest
+        calendarDates
 
 
 fromIsoStringTests : Test
@@ -91,16 +101,20 @@ fromIsoStringTests =
         datePairs = extendedDatePairs ++ List.filterMap (basicFromExtended (regex "-")) extendedDatePairs
         timePairs = extendedTimePairs ++ List.filterMap (basicFromExtended (regex ":")) extendedTimePairs
       in
-        List.concatMap (\(ds, (y, m, d)) ->
-          List.map (\(ts, (hh, mm, ss, ms)) ->
-            (ds ++ ts, Just (y, m, d, hh, mm, ss, ms))
-          ) timePairs
-        ) datePairs
+        List.concatMap
+          (\(ds, (y, m, d)) ->
+            List.map
+              (\(ts, (hh, mm, ss, ms)) ->
+                (ds ++ ts, Just (y, m, d, hh, mm, ss, ms))
+              )
+              timePairs
+          )
+          datePairs
 
     -- list of "<date>T<time>" formatted strings
     dateTimePairs : List (String, Maybe DateParts)
     dateTimePairs =
-      List.filter (String.contains "T" << fst) dateAndDateTimePairs
+      List.filter (fst >> String.contains "T") dateAndDateTimePairs
 
     -- create list of "<date>T<time><offset>" formatted strings
     dateTimePairsWithOffset : String -> List (String, Maybe DateParts)
@@ -109,40 +123,50 @@ fromIsoStringTests =
 
     fromIsoStringTest : (Date -> DateParts) -> (String, Maybe DateParts) -> Test
     fromIsoStringTest toDateParts (string, expected) =
-      test string <| assertEqual expected <| Maybe.map toDateParts <| fromIsoString string
+      equals
+        expected
+        (fromIsoString string |> Maybe.map toDateParts)
 
   in
-    suite "fromIsoString"
-      [ suite "local" <|
-          List.map (fromIsoStringTest toParts)
-          dateAndDateTimePairs
+    describe "fromIsoString"
+      [ describe "local" <|
+          List.map
+            (fromIsoStringTest toParts)
+            dateAndDateTimePairs
 
-      , suite "utc" <|
-          List.map (fromIsoStringTest (toParts << toUtc)) <|
-          List.concatMap dateTimePairsWithOffset
-            [ "+00:00"
-            , "+0000"
-            , "+00"
-            , "Z"
-            ]
+      , describe "utc" <|
+          List.map
+            (fromIsoStringTest (toParts << toUtc)) <|
+            List.concatMap
+              dateTimePairsWithOffset
+              [ "+00:00"
+              , "+0000"
+              , "+00"
+              , "Z"
+              ]
 
-      , suite "offset -07:00" <|
-          List.map (fromIsoStringTest (toParts << (toTimeOffset -420))) <|
-          List.concatMap dateTimePairsWithOffset
-            [ "-07:00"
-            , "-0700"
-            , "-07"
-            ]
+      , describe "offset -07:00" <|
+          List.map
+            (fromIsoStringTest (toParts << toTimeOffset -420)) <|
+            List.concatMap
+              dateTimePairsWithOffset
+              [ "-07:00"
+              , "-0700"
+              , "-07"
+              ]
 
-      , suite "offset +04:30" <|
-          List.map (fromIsoStringTest (toParts << (toTimeOffset 270))) <|
-          List.concatMap dateTimePairsWithOffset
-            [ "+04:30"
-            , "+0430"
-            ]
+      , describe "offset +04:30" <|
+          List.map
+          (fromIsoStringTest (toParts << toTimeOffset 270)) <|
+            List.concatMap
+              dateTimePairsWithOffset
+              [ "+04:30"
+              , "+0430"
+              ]
 
-      , suite "invalid" <|
-          List.map (fromIsoStringTest toParts)
+      , describe "invalid" <|
+          List.map
+            (fromIsoStringTest toParts)
             [ ("2008-1231",          Nothing)
             , ("200812-31",          Nothing)
             , ("2008-W014",          Nothing)
@@ -163,8 +187,8 @@ fromIsoStringTests =
 
 fromSpecTests : Test
 fromSpecTests =
-  suite "fromSpec"
-    [ suite "local"
+  describe "fromSpec"
+    [ describe "local"
         [ equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (calendarDate 2008 Dec 31))
         , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (ordinalDate 2008 366))
         , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| fromSpec local noTime (weekDate 2009 1 3))
@@ -173,7 +197,7 @@ fromSpecTests =
         , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| fromSpec local (atTime 20 30 40 567) (weekDate 2009 1 3))
         ]
 
-    , suite "utc"
+    , describe "utc"
         [ equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (calendarDate 2008 Dec 31))
         , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (ordinalDate 2008 366))
         , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| toUtc <| fromSpec utc noTime (weekDate 2009 1 3))
@@ -182,7 +206,7 @@ fromSpecTests =
         , equals (2008, Dec, 31, 20, 30, 40, 567) (toParts <| toUtc <| fromSpec utc (atTime 20 30 40 567) (weekDate 2009 1 3))
         ]
 
-    , suite "offset"
+    , describe "offset"
         [ equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (calendarDate 2008 Dec 31))
         , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (ordinalDate 2008 366))
         , equals (2008, Dec, 31,  0,  0,  0,   0) (toParts <| (toTimeOffset 60) <| fromSpec (offset 60) noTime (weekDate 2009 1 3))
@@ -195,7 +219,7 @@ fromSpecTests =
 
 tests : Test
 tests =
-  suite "Create"
+  describe "Create"
     [ fromPartsTests
     , fromCalendarDateTests
     , fromIsoStringTests

@@ -2,13 +2,13 @@ module Test.Examples exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (Interval(..), utc, offset, local, noTime, atTime, calendarDate, weekDate, ordinalDate)
-import Legacy.ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
-import Test.Utilities exposing (DateParts, toParts, toUtc, toTimeOffset)
+import Test exposing (Test, describe, test)
+import Test.Utilities exposing (equals, DateParts, toParts, toUtc, toTimeOffset)
 
 
 convertTests : Test
 convertTests =
-  suite "Convert"
+  describe "Convert"
     [ equals
         (
           Date.toFormattedString
@@ -55,7 +55,7 @@ toUtcDateTimeString =
 
 createTests : Test
 createTests =
-  suite "Create"
+  describe "Create"
     [ equals
         (
           Date.fromParts 1999 Dec 31 23 59 0 0
@@ -131,12 +131,12 @@ createTests =
 
 mathTests : Test
 mathTests =
-  suite "Math"
+  describe "Math"
     [ let
         dec31 = Date.fromCalendarDate 1999 Dec 31
         jan1 = Date.fromCalendarDate 2000 Jan 1
       in
-        suite "1"
+        describe "1"
           [ equals
               (Date.equalBy Month dec31 jan1)
               False
@@ -199,7 +199,7 @@ readmeTests =
     date =
       Date.fromParts 1999 Dec 31 23 59 59 999
   in
-    suite "README"
+    describe "README"
       [ equals
           (
             Date.floor Hour date
@@ -240,7 +240,7 @@ readmeTests =
 
 tests : Test
 tests =
-  suite "examples"
+  describe "examples"
     [ convertTests
     , createTests
     , mathTests

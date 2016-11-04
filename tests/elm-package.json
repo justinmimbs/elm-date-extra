@@ -12,8 +12,7 @@
         "elm-community/elm-test": "2.1.0 <= v < 3.0.0",
         "elm-lang/core": "4.0.1 <= v < 5.0.0",
         "elm-lang/html": "1.1.0 <= v < 2.0.0",
-        "mgold/elm-random-pcg": "3.0.4 <= v < 4.0.0",
-        "rtfeldman/legacy-elm-test": "2.0.0 <= v < 3.0.0"
+        "mgold/elm-random-pcg": "3.0.4 <= v < 4.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0"
 }

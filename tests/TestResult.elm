@@ -73,11 +73,16 @@ view (testCount, failures) =
               0 ->
                 "All tests passed"
               n ->
-                toString n ++ " tests failed"
+                pluralize "test" n ++ " failed"
         ]
     , ol []
         (failures |> List.map viewFailure)
     ]
+
+
+pluralize : String -> Int -> String
+pluralize noun n =
+  toString n ++ " " ++ noun ++ (if n == 1 then "" else "s")
 
 
 viewFailure : List String -> Html a

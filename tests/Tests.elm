@@ -1,20 +1,20 @@
 module Tests exposing (main)
 
 import Html exposing (Html)
-import Legacy.ElmTest exposing (Test, suite)
 import Random.Pcg
-import Test.Runner
-import TestResult
+import Test exposing (Test)
 import Test.Convert as Convert
 import Test.Create as Create
 import Test.Examples as Examples
 import Test.Extract as Extract
 import Test.Math as Math
+import Test.Runner
+import TestResult
 
 
 tests : Test
 tests =
-  suite "Date"
+  Test.concat
     [ Create.tests
     , Extract.tests
     , Math.tests

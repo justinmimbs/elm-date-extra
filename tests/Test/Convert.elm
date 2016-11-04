@@ -2,8 +2,10 @@ module Test.Convert exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (utc, noTime, atTime, calendarDate, toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString)
-import Legacy.ElmTest exposing (Test, suite, test, assert, assertEqual, equals)
+import Expect
 import Regex exposing (regex, contains)
+import Test exposing (Test, describe, test)
+import Test.Utilities exposing (equals)
 
 
 toFormattedStringTests : Test
@@ -11,11 +13,16 @@ toFormattedStringTests =
   let
     toFormattedStringTest : Date -> (String, String) -> Test
     toFormattedStringTest date (pattern, expected) =
-      test pattern <| assertEqual expected (toFormattedString pattern date)
+      test pattern <|
+        \() ->
+          Expect.equal
+            expected
+            (toFormattedString pattern date)
   in
-    suite "toFormattedString"
-      [ suite "symbols" <|
-          List.map (toFormattedStringTest <| Date.fromParts 2001 Jan 2 3 4 5 67)
+    describe "toFormattedString"
+      [ describe "symbols" <|
+          List.map
+            (toFormattedStringTest <| Date.fromParts 2001 Jan 2 3 4 5 67)
             [ ("y",       "2001")
             , ("yy",      "01")
             , ("yyy",     "2001")
@@ -108,15 +115,17 @@ toFormattedStringTests =
             , ("SSSS",    "0670")
             ]
 
-      , suite "escapes" <|
-          List.map (toFormattedStringTest <| Date.fromParts 2001 Jan 1 0 0 0 0)
+      , describe "escapes" <|
+          List.map
+            (toFormattedStringTest <| Date.fromParts 2001 Jan 1 0 0 0 0)
             [ ("'yYQMwdDEeabhHmsSXx'", "yYQMwdDEeabhHmsSXx")
             , ("''' '' ''' ''", "' ' ' '")
             , ("'yyyy:' yyyy", "yyyy: 2001")
             ]
 
-      , suite "symbol 'b' (midnight)" <|
-          List.map (toFormattedStringTest <| Date.fromParts 2001 Jan 1 0 0 0 0)
+      , describe "symbol 'b' (midnight)" <|
+          List.map
+            (toFormattedStringTest <| Date.fromParts 2001 Jan 1 0 0 0 0)
             [ ("b",       "mid.")
             , ("bb",      "mid.")
             , ("bbb",     "mid.")
@@ -125,8 +134,9 @@ toFormattedStringTests =
             , ("bbbbbb",  "")
             ]
 
-      , suite "symbol 'b' (noon)" <|
-          List.map (toFormattedStringTest <| Date.fromParts 2001 Jan 1 12 0 0 0)
+      , describe "symbol 'b' (noon)" <|
+          List.map
+            (toFormattedStringTest <| Date.fromParts 2001 Jan 1 12 0 0 0)
             [ ("b",       "noon")
             , ("bb",      "noon")
             , ("bbb",     "noon")
@@ -135,8 +145,9 @@ toFormattedStringTests =
             , ("bbbbbb",  "")
             ]
 
-      , suite "common uses" <|
-          List.map (toFormattedStringTest <| Date.fromParts 2008 Dec 31 20 30 40 567)
+      , describe "common uses" <|
+          List.map
+            (toFormattedStringTest <| Date.fromParts 2008 Dec 31 20 30 40 567)
             [ ("yyyy-MM-dd", "2008-12-31")
             , ("yyyy-DDD", "2008-366")
             , ("YYYY-'W'ww-e", "2009-W01-3")
@@ -154,11 +165,16 @@ toUtcFormattedStringTests =
   let
     toUtcFormattedStringTest : Date -> (String, String) -> Test
     toUtcFormattedStringTest date (pattern, expected) =
-      test pattern <| assertEqual expected (toUtcFormattedString pattern date)
+      test pattern <|
+        \() ->
+          Expect.equal
+            expected
+            (toUtcFormattedString pattern date)
   in
-    suite "toUtcFormattedString"
-      [ suite "symbols" <|
-          List.map (toUtcFormattedStringTest <| Date.fromSpec utc (atTime 3 4 5 67) (calendarDate 2001 Jan 2))
+    describe "toUtcFormattedString"
+      [ describe "symbols" <|
+          List.map
+            (toUtcFormattedStringTest <| Date.fromSpec utc (atTime 3 4 5 67) (calendarDate 2001 Jan 2))
             [ ("y",       "2001")
             , ("yy",      "01")
             , ("yyy",     "2001")
@@ -272,14 +288,16 @@ toIsoStringTests =
     expected =
       regex "^2001-01-02T20:30:40.567[+-][0-2]\\d:[0-5]\\d$"
   in
-    suite "toIsoString"
-      [ test "yyyy-mm-ddThh:mm:ss.fff+hh:mm" <| assert <| contains expected (toIsoString date)
+    describe "toIsoString"
+      [ equals
+          True
+          (date |> toIsoString |> contains expected)
       ]
 
 
 toUtcIsoStringTests : Test
 toUtcIsoStringTests =
-  suite "toUtcIsoString"
+  describe "toUtcIsoString"
     [ equals
         "2001-01-02T20:30:40.567Z"
         (toUtcIsoString <| Date.fromSpec utc (atTime 20 30 40 567) (calendarDate 2001 Jan 2))
@@ -288,7 +306,7 @@ toUtcIsoStringTests =
 
 tests : Test
 tests =
-  suite "Convert"
+  describe "Convert"
     [ toFormattedStringTests
     , toIsoStringTests
     , toUtcFormattedStringTests

@@ -2,13 +2,13 @@ module Test.Math exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (Interval(..), fromParts)
-import Legacy.ElmTest exposing (Test, suite, equals, defaultTest, assert)
-import Test.Utilities exposing (DateParts, toParts)
+import Test exposing (Test, describe, test)
+import Test.Utilities exposing (equals, DateParts, toParts)
 
 
 equalTests : Test
 equalTests =
-  suite "equal"
+  describe "equal"
     [ equals True  <| Date.equal (fromParts 2000 Jan 1 0 0 0 0) (fromParts 2000 Jan 1 0 0 0 0)
     , equals False <| Date.equal (fromParts 2000 Jan 1 0 0 0 0) (fromParts 2000 Jan 1 0 0 0 1)
     ]
@@ -21,7 +21,7 @@ date3 = (fromParts 2001 Jan 1 0 0 0 0)
 
 compareTests : Test
 compareTests =
-  suite "compare"
+  describe "compare"
     [ equals LT <| Date.compare date1 date2
     , equals EQ <| Date.compare date2 date2
     , equals GT <| Date.compare date3 date2
@@ -33,7 +33,7 @@ compareTests =
 
 isBetweenTests : Test
 isBetweenTests =
-  suite "isBetween"
+  describe "isBetween"
     [ equals True  <| Date.isBetween date1 date3 date2
     , equals True  <| Date.isBetween date1 date3 date3
     , equals True  <| Date.isBetween date1 date3 date1
@@ -47,12 +47,14 @@ isBetweenTests =
 
 equalDatesTest : Date -> Date -> Test
 equalDatesTest a b =
-  defaultTest <| assert <| Date.equal a b
+  equals
+    (Date.toTime a)
+    (Date.toTime b)
 
 
 clampTests : Test
 clampTests =
-  suite "clamp"
+  describe "clamp"
     [ equalDatesTest date2 <| Date.clamp date1 date3 date2
     , equalDatesTest date2 <| Date.clamp date1 date2 date3
     , equalDatesTest date2 <| Date.clamp date1 date2 date2
@@ -63,7 +65,7 @@ clampTests =
 
 equalByTests : Test
 equalByTests =
-  suite "equalBy"
+  describe "equalBy"
     [ equals True  <| Date.equalBy Millisecond (fromParts 2000 Jan 1 0 0 0 0) (fromParts 2000 Jan  1  0  0  0   0)
     , equals True  <| Date.equalBy Second      (fromParts 2000 Jan 1 0 0 0 0) (fromParts 2000 Jan  1  0  0  0 999)
     , equals True  <| Date.equalBy Minute      (fromParts 2000 Jan 1 0 0 0 0) (fromParts 2000 Jan  1  0  0 59 999)
@@ -101,9 +103,9 @@ equalByTests =
 
 
 testsForIdempotentDateOperation : Date -> (Date -> Date) -> Date -> List Test
-testsForIdempotentDateOperation x f x' =
-  [ equalDatesTest x' <| f x
-  , equalDatesTest x' <| f (f x)
+testsForIdempotentDateOperation x f expected =
+  [ equalDatesTest expected <| f x
+  , equalDatesTest expected <| f (f x)
   ]
 
 
@@ -112,10 +114,11 @@ floorTests =
   let
     date = fromParts 1999 Dec 31 23 59 59 999
   in
-    suite "floor" <|
+    describe "floor" <|
       List.concatMap
         (\(f, x') ->
-          testsForIdempotentDateOperation date f x')
+          testsForIdempotentDateOperation date f x'
+        )
         [ (Date.floor Millisecond, fromParts 1999 Dec 31 23 59 59 999)
         , (Date.floor Second,      fromParts 1999 Dec 31 23 59 59   0)
         , (Date.floor Minute,      fromParts 1999 Dec 31 23 59  0   0)
@@ -140,10 +143,11 @@ ceilingTests =
   let
     date = fromParts 2000 Jan 1 0 0 0 1
   in
-    suite "ceiling" <|
+    describe "ceiling" <|
       List.concatMap
         (\(f, x') ->
-          testsForIdempotentDateOperation date f x')
+          testsForIdempotentDateOperation date f x'
+        )
         [ (Date.ceiling Millisecond, fromParts 2000 Jan  1  0  0  0   1)
         , (Date.ceiling Second,      fromParts 2000 Jan  1  0  0  1   0)
         , (Date.ceiling Minute,      fromParts 2000 Jan  1  0  1  0   0)
@@ -189,24 +193,27 @@ addTests =
   let
     date = fromParts 1999 Dec 31 23 59 59 999
   in
-    suite "add"
-      [ suite "add 0 x == x" <|
+    describe "add"
+      [ describe "add 0 x == x" <|
           List.map
             (\interval ->
-              equalDatesTest date <| Date.add interval 0 date)
+              equalDatesTest date <| Date.add interval 0 date
+            )
             intervals
 
       -- note: not always true for adding Month, Quarter, or Year intervals, as month and year lengths are not consistent
-      , suite "add -n (add n x) == x" <|
+      , describe "add -n (add n x) == x" <|
           List.map
             (\interval ->
-              equalDatesTest date <| Date.add interval -5 <| Date.add interval 5 date)
+              equalDatesTest date <| Date.add interval -5 <| Date.add interval 5 date
+            )
             intervals
 
-      , suite "expected results" <|
+      , describe "expected results" <|
           List.map
             (\(f, x') ->
-              equalDatesTest x' <| f date)
+              equalDatesTest x' <| f date
+            )
             [ (Date.add Millisecond  500, fromParts 2000 Jan  1  0  0  0 499)
             , (Date.add Millisecond 1500, fromParts 2000 Jan  1  0  0  1 499)
             , (Date.add Second        30, fromParts 2000 Jan  1  0  0 29 999)
@@ -229,7 +236,8 @@ addTests =
           ++
           List.map
             (\(f, x') ->
-              equalDatesTest x' <| f (fromParts 2000 Feb 29 23 59 59 999))
+              equalDatesTest x' <| f (fromParts 2000 Feb 29 23 59 59 999)
+            )
             [ (Date.add Year           1, fromParts 2001 Feb 28 23 59 59 999)
             , (Date.add Year           4, fromParts 2004 Feb 29 23 59 59 999)
             ]
@@ -242,23 +250,26 @@ diffTests =
     date1 = fromParts 1999 Dec 31 23 59 59 999
     date2 = fromParts 2001 Jan  1  0  0  0   0
   in
-    suite "diff"
-      [ suite "diff x x == 0" <|
+    describe "diff"
+      [ describe "diff x x == 0" <|
           List.map
             (\interval ->
-              equals 0 <| Date.diff interval date1 date1)
+              equals 0 <| Date.diff interval date1 date1
+            )
             intervals
 
-      , suite "diff a b == -(diff b a)" <|
+      , describe "diff a b == -(diff b a)" <|
           List.map
             (\interval ->
-              equals (Date.diff interval date1 date2) (negate <| Date.diff interval date2 date1))
+              equals (Date.diff interval date1 date2) (negate <| Date.diff interval date2 date1)
+            )
             intervals
 
-      , suite "expected results" <|
+      , describe "expected results" <|
           List.map
             (\(f, x') ->
-              equals x' <| f date1)
+              equals x' <| f date1
+            )
             [ (Date.diff Millisecond <| fromParts 2000 Jan  1  0  0  0 499,  -500)
             , (Date.diff Millisecond <| fromParts 2000 Jan  1  0  0  1 499, -1500)
             , (Date.diff Second      <| fromParts 2000 Jan  1  0  0 29 999,   -30)
@@ -293,7 +304,7 @@ rangeTests =
   let
     date = fromParts 2000 Jan 1 0 0 0 0
   in
-    suite "range"
+    describe "range"
       [ equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Jan,  1,  0,  0,  0, 200)
@@ -410,7 +421,7 @@ rangeTests =
 
 tests : Test
 tests =
-  suite "Math"
+  describe "Math"
     [ equalTests
     , compareTests
     , isBetweenTests
