@@ -41,7 +41,7 @@ calendarDatesInMonth : Int -> Month -> List (Int, Month, Int)
 calendarDatesInMonth y m =
   List.map
     ((,,) y m)
-    [ 1 .. (daysInMonth y m) ]
+    (List.range 1 (daysInMonth y m))
 
 
 calendarDatesInYear : Int -> List (Int, Month, Int)

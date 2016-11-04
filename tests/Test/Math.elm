@@ -116,8 +116,8 @@ floorTests =
   in
     describe "floor" <|
       List.concatMap
-        (\(f, x') ->
-          testsForIdempotentDateOperation date f x'
+        (\(f, expected) ->
+          testsForIdempotentDateOperation date f expected
         )
         [ (Date.floor Millisecond, fromParts 1999 Dec 31 23 59 59 999)
         , (Date.floor Second,      fromParts 1999 Dec 31 23 59 59   0)
@@ -145,8 +145,8 @@ ceilingTests =
   in
     describe "ceiling" <|
       List.concatMap
-        (\(f, x') ->
-          testsForIdempotentDateOperation date f x'
+        (\(f, expected) ->
+          testsForIdempotentDateOperation date f expected
         )
         [ (Date.ceiling Millisecond, fromParts 2000 Jan  1  0  0  0   1)
         , (Date.ceiling Second,      fromParts 2000 Jan  1  0  0  1   0)
@@ -211,8 +211,8 @@ addTests =
 
       , describe "expected results" <|
           List.map
-            (\(f, x') ->
-              equalDatesTest x' <| f date
+            (\(f, expected) ->
+              equalDatesTest expected <| f date
             )
             [ (Date.add Millisecond  500, fromParts 2000 Jan  1  0  0  0 499)
             , (Date.add Millisecond 1500, fromParts 2000 Jan  1  0  0  1 499)
@@ -235,8 +235,8 @@ addTests =
             ]
           ++
           List.map
-            (\(f, x') ->
-              equalDatesTest x' <| f (fromParts 2000 Feb 29 23 59 59 999)
+            (\(f, expected) ->
+              equalDatesTest expected <| f (fromParts 2000 Feb 29 23 59 59 999)
             )
             [ (Date.add Year           1, fromParts 2001 Feb 28 23 59 59 999)
             , (Date.add Year           4, fromParts 2004 Feb 29 23 59 59 999)
@@ -267,8 +267,8 @@ diffTests =
 
       , describe "expected results" <|
           List.map
-            (\(f, x') ->
-              equals x' <| f date1
+            (\(f, expected) ->
+              equals expected <| f date1
             )
             [ (Date.diff Millisecond <| fromParts 2000 Jan  1  0  0  0 499,  -500)
             , (Date.diff Millisecond <| fromParts 2000 Jan  1  0  0  1 499, -1500)

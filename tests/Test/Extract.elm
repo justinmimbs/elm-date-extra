@@ -58,15 +58,15 @@ quarterTests =
         List.concatMap
           (datesInMonth 2016)
           monthsInQuarter
-    in
-      describe "quarter" <|
-        List.concatMap
-          testsForQuarter
-          [ ([ Jan, Feb, Mar ], 1)
-          , ([ Apr, May, Jun ], 2)
-          , ([ Jul, Aug, Sep ], 3)
-          , ([ Oct, Nov, Dec ], 4)
-          ]
+  in
+    describe "quarter" <|
+      List.concatMap
+        testsForQuarter
+        [ ([ Jan, Feb, Mar ], 1)
+        , ([ Apr, May, Jun ], 2)
+        , ([ Jul, Aug, Sep ], 3)
+        , ([ Oct, Nov, Dec ], 4)
+        ]
 
 
 ordinalDayTests : Test

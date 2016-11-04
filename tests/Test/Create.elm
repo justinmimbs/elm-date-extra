@@ -6,6 +6,7 @@ import Regex exposing (Regex, HowMany(All), regex, replace)
 import String
 import Test exposing (Test, describe, test)
 import Test.Utilities exposing (equals, DateParts, toParts, toUtc, toTimeOffset, calendarDatesInYear)
+import Tuple
 
 
 fromPartsTests : Test
@@ -37,8 +38,12 @@ fromCalendarDateTests =
     calendarDates : List (Int, Month, Int)
     calendarDates =
       List.concatMap
-        calendarDatesInYear
-        (List.concat [ [ 1897 .. 1905 ], [ 1967 .. 1975 ], [ 1997 .. 2020 ] ])
+        calendarDatesInYear <|
+        List.concat
+          [ List.range 1897 1905
+          , List.range 1967 1975
+          , List.range 1997 2020
+          ]
 
     calendarDateTest : (Int, Month, Int) -> Test
     calendarDateTest (y, m, d) =
@@ -114,7 +119,7 @@ fromIsoStringTests =
     -- list of "<date>T<time>" formatted strings
     dateTimePairs : List (String, Maybe DateParts)
     dateTimePairs =
-      List.filter (fst >> String.contains "T") dateAndDateTimePairs
+      List.filter (Tuple.first >> String.contains "T") dateAndDateTimePairs
 
     -- create list of "<date>T<time><offset>" formatted strings
     dateTimePairsWithOffset : String -> List (String, Maybe DateParts)

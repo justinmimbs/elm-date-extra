@@ -10,7 +10,7 @@ import String
 
 (>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
 (>>=) =
-  Maybe.andThen
+  flip Maybe.andThen
 
 infixl 1 >>=
 
@@ -107,7 +107,7 @@ msFromMatches timeHH timeMM timeSS timeF =
   let
     fractional = (timeF >>= stringToFloat) ? 0.0
     (hh, mm, ss) =
-      case [ timeHH, timeMM, timeSS ] |> List.map ((flip Maybe.andThen) stringToFloat) of
+      case [ timeHH, timeMM, timeSS ] |> List.map (Maybe.andThen stringToFloat) of
         [ Just hh, Just mm, Just ss ] -> (hh, mm, ss + fractional)
         [ Just hh, Just mm, Nothing ] -> (hh, mm + fractional, 0.0)
         [ Just hh, Nothing, Nothing ] -> (hh + fractional, 0.0, 0.0)
