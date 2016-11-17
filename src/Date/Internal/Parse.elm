@@ -5,21 +5,6 @@ import Date exposing (Date, Month)
 import Date.Extra.Facts exposing (monthFromMonthNumber, msPerSecond, msPerMinute, msPerHour)
 import Date.Internal.Core exposing (unixTimeFromCalendarDate, unixTimeFromWeekDate, unixTimeFromOrdinalDate)
 import Regex exposing (Regex, HowMany(AtMost), regex)
-import String
-
-
-(>>=) : Maybe a -> (a -> Maybe b) -> Maybe b
-(>>=) =
-  flip Maybe.andThen
-
-infixl 1 >>=
-
-
-(?) : Maybe a -> a -> a
-(?) =
-  flip Maybe.withDefault
-
-infixl 9 ?
 
 
 stringToInt : String -> Maybe Int
@@ -61,7 +46,10 @@ isoDateRegex =
 
 offsetTimeFromIsoString : String -> Maybe (Maybe Int, Int)
 offsetTimeFromIsoString s =
-  (Regex.find (AtMost 1) isoDateRegex s |> List.head |> Maybe.map .submatches) >>= offsetTimeFromMatches
+  Regex.find (AtMost 1) isoDateRegex s
+    |> List.head
+    |> Maybe.map .submatches
+    |> Maybe.andThen offsetTimeFromMatches
 
 
 offsetTimeFromMatches : List (Maybe String) -> Maybe (Maybe Int, Int)
@@ -73,7 +61,7 @@ offsetTimeFromMatches matches =
         timeMS = msFromMatches timeHH timeMM timeSS timeF
         offset = offsetFromMatches tzZ tzSign tzHH tzMM
       in
-        Just <| (offset, dateMS + timeMS)
+        Just (offset, dateMS + timeMS)
     _ ->
       Nothing
 
@@ -81,31 +69,31 @@ offsetTimeFromMatches matches =
 unixTimeFromMatches : String -> Maybe String -> Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
 unixTimeFromMatches yyyy calMM calDD weekWW weekD ordDDD =
   let
-    y = stringToInt yyyy ? 1
+    y = stringToInt yyyy |> Maybe.withDefault 1
   in
     case (calMM, weekWW) of
       (Just _, Nothing) ->
         unixTimeFromCalendarDate
           y
-          ((calMM >>= stringToInt) ? 1 |> monthFromMonthNumber)
-          ((calDD >>= stringToInt) ? 1)
+          (calMM |> Maybe.andThen stringToInt |> Maybe.withDefault 1 |> monthFromMonthNumber)
+          (calDD |> Maybe.andThen stringToInt |> Maybe.withDefault 1)
 
       (Nothing, Just _) ->
         unixTimeFromWeekDate
           y
-          ((weekWW >>= stringToInt) ? 1)
-          ((weekD >>= stringToInt) ? 1)
+          (weekWW |> Maybe.andThen stringToInt |> Maybe.withDefault 1)
+          (weekD |> Maybe.andThen stringToInt |> Maybe.withDefault 1)
 
       _ ->
         unixTimeFromOrdinalDate
           y
-          ((ordDDD >>= stringToInt) ? 1)
+          ((ordDDD |> Maybe.andThen stringToInt) |> Maybe.withDefault 1)
 
 
 msFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -> Int
 msFromMatches timeHH timeMM timeSS timeF =
   let
-    fractional = (timeF >>= stringToFloat) ? 0.0
+    fractional = timeF |> Maybe.andThen stringToFloat |> Maybe.withDefault 0.0
     (hh, mm, ss) =
       case [ timeHH, timeMM, timeSS ] |> List.map (Maybe.andThen stringToFloat) of
         [ Just hh, Just mm, Just ss ] -> (hh, mm, ss + fractional)
@@ -127,8 +115,8 @@ offsetFromMatches tzZ tzSign tzHH tzMM =
 
     (Nothing, Just sign) ->
       let
-        hh = (tzHH >>= stringToInt) ? 0
-        mm = (tzMM >>= stringToInt) ? 0
+        hh = tzHH |> Maybe.andThen stringToInt |> Maybe.withDefault 0
+        mm = tzMM |> Maybe.andThen stringToInt |> Maybe.withDefault 0
       in
         Just <| (if sign == "+" then 1 else -1) * (hh * 60 + mm)
 

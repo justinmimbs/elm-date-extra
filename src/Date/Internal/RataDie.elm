@@ -21,17 +21,15 @@ find pred list =
   case list of
     [] ->
       Nothing
-    x::xs ->
+    x :: xs ->
       if pred x then Just x else find pred xs
 
 
 -- integer division returning (Quotient, Remainder)
 
-(///) : Int -> Int -> (Int, Int)
-(///) n d =
-  (n // d, n % d)
-
-infixl 7 ///
+divideInt : Int -> Int -> (Int, Int)
+divideInt a b =
+  (a // b, rem a b)
 
 
 -- RataDie
@@ -78,10 +76,10 @@ fromWeekDate y w d =
 year : RataDie -> Int
 year rd =
   let
-    (q400, r400) = rd /// 146097 -- 400 * 365 + 97
-    (q100, r100) = r400 /// 36524 -- 100 * 365 + 24
-    (q4, r4) = r100 /// 1461 -- 4 * 365 + 1
-    (q1, r1) = r4 /// 365
+    (q400, r400) = divideInt rd   146097 -- 400 * 365 + 97
+    (q100, r100) = divideInt r400  36524 -- 100 * 365 + 24
+    (q4,   r4)   = divideInt r100   1461 --   4 * 365 +  1
+    (q1,   r1)   = divideInt r4      365
     n = if r1 == 0 then 0 else 1
   in
     q400 * 400 + q100 * 100 + q4 * 4 + q1 + n
