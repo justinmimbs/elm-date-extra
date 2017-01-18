@@ -678,15 +678,6 @@ diff interval date1 date2 =
       weekday     -> diff Day (floor weekday date1) (floor weekday date2) // 7
 
 
-unfold : (b -> Maybe (a, b)) -> b -> List a
-unfold f seed =
-  case f seed of
-    Nothing ->
-      []
-    Just (x, nextSeed) ->
-      x :: unfold f nextSeed
-
-
 {-| Create a list of dates, at rounded intervals, increasing by a step value,
 between two dates. The list will start at or after the first date, and end
 before the second date.
@@ -699,11 +690,14 @@ before the second date.
 range : Interval -> Int -> Date -> Date -> List Date
 range interval step start end =
   let
-    next : Date -> Maybe (Date, Date)
-    next date =
-      if toTime date >= toTime end then
-        Nothing
-      else
-        Just (date, add interval (max 1 step) date)
+    stepBack = max 1 step |> negate
   in
-    ceiling interval start |> unfold next
+    rangeHelp [] interval stepBack start (end |> add interval stepBack |> ceiling interval)
+
+
+rangeHelp : List Date -> Interval -> Int -> Date -> Date -> List Date
+rangeHelp result interval step start date =
+  if toTime date < toTime start then
+    result
+  else
+    rangeHelp (date :: result) interval step start (date |> add interval step)

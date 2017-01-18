@@ -1,4 +1,4 @@
-module Tests exposing (main)
+module Main exposing (main)
 
 import Html exposing (Html)
 import Random.Pcg

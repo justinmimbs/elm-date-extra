@@ -2,6 +2,7 @@ module Test.Math exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (Interval(..), fromParts)
+import Expect
 import Test exposing (Test, describe, test)
 import Test.Utilities exposing (equals, DateParts, toParts)
 
@@ -310,112 +311,133 @@ rangeTests =
           , (2000, Jan,  1,  0,  0,  0, 200)
           , (2000, Jan,  1,  0,  0,  0, 400)
           ]
-          (List.map toParts <| Date.range Millisecond 200 date <| fromParts 2000 Jan 1 0 0 0 600)
+          (Date.range Millisecond 200 date (fromParts 2000 Jan 1 0 0 0 600) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Jan,  1,  0,  0, 30,   0)
           , (2000, Jan,  1,  0,  1,  0,   0)
           ]
-          (List.map toParts <| Date.range Second 30 date <| fromParts 2000 Jan 1 0 1 30 0)
+          (Date.range Second 30 date (fromParts 2000 Jan 1 0 1 30 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Jan,  1,  0, 45,  0,   0)
           , (2000, Jan,  1,  1, 30,  0,   0)
           ]
-          (List.map toParts <| Date.range Minute 45 date <| fromParts 2000 Jan 1 2 15 0 0)
+          (Date.range Minute 45 date (fromParts 2000 Jan 1 2 15 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Jan,  1, 18,  0,  0,   0)
           , (2000, Jan,  2, 12,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Hour 18 date <| fromParts 2000 Jan 3 6 0 0 0)
+          (Date.range Hour 18 date (fromParts 2000 Jan 3 6 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Jan,  3,  0,  0,  0,   0)
           , (2000, Jan,  5,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Day 2 date <| fromParts 2000 Jan 7 0 0 0 0)
+          (Date.range Day 2 date (fromParts 2000 Jan 7 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Mar,  1,  0,  0,  0,   0)
           , (2000, May,  1,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Month 2 date <| fromParts 2000 Jul 1 0 0 0 0)
+          (Date.range Month 2 date (fromParts 2000 Jul 1 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2010, Jan,  1,  0,  0,  0,   0)
           , (2020, Jan,  1,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Year 10 date <| fromParts 2030 Jan 1 0 0 0 0)
+          (Date.range Year 10 date (fromParts 2030 Jan 1 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Apr,  1,  0,  0,  0,   0)
           , (2000, Jul,  1,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Quarter 1 date <| fromParts 2000 Sep 1 0 0 0 0)
+          (Date.range Quarter 1 date (fromParts 2000 Sep 1 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  3,  0,  0,  0,   0)
           , (2000, Jan, 17,  0,  0,  0,   0)
           , (2000, Jan, 31,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Week 2 date <| fromParts 2000 Feb 14 0 0 0 0)
+          (Date.range Week 2 date (fromParts 2000 Feb 14 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  3,  0,  0,  0,   0)
           , (2000, Jan, 17,  0,  0,  0,   0)
           , (2000, Jan, 31,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Monday 2 date <| fromParts 2000 Feb 14 0 0 0 0)
+          (Date.range Monday 2 date (fromParts 2000 Feb 14 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  4,  0,  0,  0,   0)
           , (2000, Jan, 18,  0,  0,  0,   0)
           , (2000, Feb,  1,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Tuesday 2 date <| fromParts 2000 Feb 15 0 0 0 0)
+          (Date.range Tuesday 2 date (fromParts 2000 Feb 15 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  5,  0,  0,  0,   0)
           , (2000, Jan, 19,  0,  0,  0,   0)
           , (2000, Feb,  2,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Wednesday 2 date <| fromParts 2000 Feb 16 0 0 0 0)
+          (Date.range Wednesday 2 date (fromParts 2000 Feb 16 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  6,  0,  0,  0,   0)
           , (2000, Jan, 20,  0,  0,  0,   0)
           , (2000, Feb,  3,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Thursday 2 date <| fromParts 2000 Feb 17 0 0 0 0)
+          (Date.range Thursday 2 date (fromParts 2000 Feb 17 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  7,  0,  0,  0,   0)
           , (2000, Jan, 21,  0,  0,  0,   0)
           , (2000, Feb,  4,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Friday 2 date <| fromParts 2000 Feb 18 0 0 0 0)
+          (Date.range Friday 2 date (fromParts 2000 Feb 18 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  1,  0,  0,  0,   0)
           , (2000, Jan, 15,  0,  0,  0,   0)
           , (2000, Jan, 29,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Saturday 2 date <| fromParts 2000 Feb 12 0 0 0 0)
+          (Date.range Saturday 2 date (fromParts 2000 Feb 12 0 0 0 0) |> List.map toParts)
 
       , equals
           [ (2000, Jan,  2,  0,  0,  0,   0)
           , (2000, Jan, 16,  0,  0,  0,   0)
           , (2000, Jan, 30,  0,  0,  0,   0)
           ]
-          (List.map toParts <| Date.range Sunday 2 date <| fromParts 2000 Feb 13 0 0 0 0)
+          (Date.range Sunday 2 date (fromParts 2000 Feb 13 0 0 0 0) |> List.map toParts)
+
+      , equals
+          []
+          (Date.range Millisecond 1 date date |> List.map toParts)
+
+      , equals
+          [ (2000, Jan,  31,  0,  0,  0,   0) ]
+          (Date.range Day 1 date (Date.add Month 1 date) |> List.reverse |> List.take 1 |> List.map toParts)
+
+      , equals
+          366
+          (Date.range Day 1 date (Date.add Year 1 date) |> List.length)
+
+      , test "large range (tail recursion)" <|
+          \() ->
+              let
+                start = fromParts 1970 Jan 1 0 0 0 0
+                end = fromParts 2020 Jan 1 0 0 0 0
+                result = Date.range Day 1 start end
+              in
+                Expect.equal (Date.diff Day start end) (List.length result |> Debug.log "length")
       ]
 
 
