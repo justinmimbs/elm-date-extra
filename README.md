@@ -43,6 +43,17 @@ Date.fromIsoString "1/1/2000"
 -- Nothing
 ```
 
+Create a date from a [specified](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/latest/Date-Extra#fromSpec)
+time zone, time of day, and day.
+
+```elm
+Date.fromSpec
+  (Date.offset -180)
+  (Date.atTime 20 0 0 0)
+  (Date.calendarDate 2016 Aug 5)
+-- <5 August 2016, 23:00, UTC>
+```
+
 ### Format
 
 Convert dates to formatted strings, using templates based on Date Format
@@ -85,5 +96,5 @@ Date.diff Day date (Date.add Week 2 date)
 Date.range Monday 1
   (Date.floor Month date)   -- <1 December 1999>
   (Date.ceiling Month date) -- <1 January 2000>
--- [<6 December 1999>, <13 December 1999>, <20 December 1999>, <27 December 1999>]
+-- [ <6 December 1999>, <13 December 1999>, <20 December 1999>, <27 December 1999> ]
 ```
