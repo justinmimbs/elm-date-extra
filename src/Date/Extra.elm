@@ -18,6 +18,7 @@ module Date.Extra
         , fromCalendarDate
         , fromIsoString
         , fromParts
+        , fromRataDie
         , fromSpec
         , isBetween
         , local
@@ -31,6 +32,7 @@ module Date.Extra
         , range
         , toFormattedString
         , toIsoString
+        , toRataDie
         , toUtcFormattedString
         , toUtcIsoString
         , utc
@@ -98,6 +100,23 @@ do this.
 
 @docs DateSpec, calendarDate, weekDate, ordinalDate
 
+
+# Rata Die
+
+[Rata Die](https://en.wikipedia.org/wiki/Rata_Die) represents each calendar day
+as a number, using 1 for its base date, _1 January 0001_, and increasing by 1
+each day. Converting to and from Rata Die uses the local representation of a
+`Date`.
+
+    date = Date.fromCalendarDate 2007 Mar 15
+
+    Date.equal
+        (date |> Date.toRataDie |> Date.fromRataDie)
+        date
+    -- True
+
+@docs toRataDie, fromRataDie
+
 -}
 
 import Date exposing (Date, Day(..), Month(..), day, dayOfWeek, hour, millisecond, minute, month, second, toTime, year)
@@ -106,6 +125,7 @@ import Date.Internal.Core exposing (msFromTimeParts, unixTimeFromCalendarDate, u
 import Date.Internal.Extract
 import Date.Internal.Format
 import Date.Internal.Parse exposing (offsetTimeFromIsoString)
+import Date.Internal.RataDie
 
 
 -- Create
@@ -883,3 +903,19 @@ rangeHelp result interval step start date =
         result
     else
         rangeHelp (date :: result) interval step start (date |> add interval step)
+
+
+
+-- Rata Die
+
+
+{-| -}
+toRataDie : Date -> Int
+toRataDie date =
+    Date.Internal.RataDie.fromCalendarDate (year date) (month date) (day date)
+
+
+{-| -}
+fromRataDie : Int -> Date
+fromRataDie rd =
+    fromCalendarDate 1970 Jan 1 |> add Day (rd - 719163)
