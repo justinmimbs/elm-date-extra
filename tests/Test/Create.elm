@@ -22,17 +22,33 @@ tests =
 test_fromParts : Test
 test_fromParts =
     describe "fromParts" <|
-        List.map
-            (\(( y, m, d, hh, mm, ss, ms ) as parts) ->
-                test (toString parts) <|
-                    \() -> fromParts y m d hh mm ss ms |> toParts |> Expect.equal parts
-            )
-            [ ( 1969, Dec, 31, 23, 59, 59, 999 )
-            , ( 1970, Jan, 1, 0, 0, 0, 0 )
-            , ( 1999, Dec, 31, 23, 59, 59, 999 )
-            , ( 2000, Jan, 1, 0, 0, 0, 0 )
-            , ( 2008, Dec, 31, 20, 30, 40, 567 )
+        [ describe "assumes provided parts are in local time, i.e. the extractions will match the provided parts" <|
+            List.map
+                (\(( y, m, d, hh, mm, ss, ms ) as parts) ->
+                    test (toString parts) <|
+                        \() -> fromParts y m d hh mm ss ms |> toParts |> Expect.equal parts
+                )
+                [ ( 1969, Dec, 31, 23, 59, 59, 999 )
+                , ( 1970, Jan, 1, 0, 0, 0, 0 )
+                , ( 1999, Dec, 31, 23, 59, 59, 999 )
+                , ( 2000, Jan, 1, 0, 0, 0, 0 )
+                , ( 2008, Dec, 31, 20, 30, 40, 567 )
+                ]
+        , describe "allows out-of-range parts to overflow"
+            [ test "days" <| \() -> fromParts 2001 Feb 31 0 0 0 0 |> toParts |> Expect.equal ( 2001, Mar, 3, 0, 0, 0, 0 )
+            , test "hours" <| \() -> fromParts 2001 Feb 28 27 0 0 0 |> toParts |> Expect.equal ( 2001, Mar, 1, 3, 0, 0, 0 )
+            , test "minutes" <| \() -> fromParts 2001 Feb 28 0 63 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 1, 3, 0, 0 )
+            , test "seconds" <| \() -> fromParts 2001 Feb 28 0 0 63 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 1, 3, 0 )
+            , test "milliseconds" <| \() -> fromParts 2001 Feb 28 0 0 0 1003 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 1, 3 )
             ]
+        , describe "allows out-of-range parts to underflow"
+            [ test "days" <| \() -> fromParts 2001 Feb 0 0 0 0 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 0, 0, 0, 0 )
+            , test "hours" <| \() -> fromParts 2001 Feb 1 -1 0 0 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 0, 0, 0 )
+            , test "minutes" <| \() -> fromParts 2001 Feb 1 0 -1 0 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 59, 0, 0 )
+            , test "seconds" <| \() -> fromParts 2001 Feb 1 0 0 -1 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 59, 59, 0 )
+            , test "milliseconds" <| \() -> fromParts 2001 Feb 1 0 0 0 -1 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 59, 59, 999 )
+            ]
+        ]
 
 
 test_fromCalendarDate : Test
