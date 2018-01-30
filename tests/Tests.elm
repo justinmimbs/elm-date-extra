@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Tests exposing (..)
 
 import Html exposing (Html)
 import Random.Pcg
@@ -14,18 +14,18 @@ import TestResult
 
 tests : Test
 tests =
-  Test.concat
-    [ Create.tests
-    , Extract.tests
-    , Math.tests
-    , Convert.tests
-    , Examples.tests
-    ]
+    Test.concat
+        [ Create.tests
+        , Extract.tests
+        , Math.tests
+        , Convert.tests
+        , Examples.tests
+        ]
 
 
 main : Html a
 main =
-  tests
-    |> Test.Runner.fromTest 1 (Random.Pcg.initialSeed 0)
-    |> TestResult.fromRunner
-    |> TestResult.view
+    tests
+        |> Test.Runner.fromTest 1 (Random.Pcg.initialSeed 0)
+        |> TestResult.fromRunner
+        |> TestResult.view
