@@ -78,7 +78,7 @@ These functions work on dates within the context of a given interval of time.
 
 # Detailed Specification
 
-In some cases you may want to specify a date with a time zone offset or from
+In some cases you may want to specify a date with a time offset or from
 week-date or ordinal-date parts. The `fromSpec` function provides a way to
 do this.
 @docs fromSpec
@@ -209,7 +209,7 @@ fromCalendarDate y m d =
     Date.fromIsoString "1/1/2000"
     -- Nothing
 
-When a `Date` is created with a specified time zone offset (e.g. `"-03:00"`),
+When a `Date` is created with a specified time offset (e.g. `"-03:00"`),
 its extractions still reflect the current machine's local time, and
 `Date.toTime` still reflects its UTC time.
 
@@ -219,27 +219,27 @@ fromIsoString =
     offsetTimeFromIsoString >> Maybe.map fromOffsetTime
 
 
-{-| Represents a time zone.
+{-| Represents a time offset from UTC.
 -}
 type TimeZone
     = Offset (Maybe Int)
 
 
-{-| UTC time zone.
+{-| Use no offset.
 -}
 utc : TimeZone
 utc =
     Offset (Just 0)
 
 
-{-| Create a `TimeZone` with a specific offset from UTC time, given in minutes.
+{-| Use a specific offset from UTC, given in minutes.
 -}
 offset : Int -> TimeZone
 offset minutes =
     Offset (Just minutes)
 
 
-{-| Do not specify a time zone, but use the local offset instead.
+{-| Use the local offset.
 -}
 local : TimeZone
 local =
@@ -293,27 +293,27 @@ weekDate y w d =
     DateMS <| unixTimeFromWeekDate y w d
 
 
-{-| Create a `Date` from a specified time zone, time of day, and day.
+{-| Create a `Date` from a specified time offset, time of day, and day.
 
     Date.fromSpec
-      local
-      noTime
-      (calendarDate 2000 Jan 1)
+        local
+        noTime
+        (calendarDate 2000 Jan 1)
     -- <1 January 2000, local time>
 
     Date.fromSpec
-      utc
-      noTime
-      (weekDate 2009 1 1)
+        utc
+        noTime
+        (weekDate 2009 1 1)
     -- <29 December 2008, UTC>
 
     Date.fromSpec
-      (offset -180)
-      (atTime 20 0 0 0)
-      (ordinalDate 2016 218)
+        (offset -180)
+        (atTime 20 0 0 0)
+        (ordinalDate 2016 218)
     -- <5 August 2016, 23:00, UTC>
 
-When a `Date` is created with a specified time zone offset (e.g. `offset -180`),
+When a `Date` is created with a specified time offset (e.g. `offset -180`),
 its extractions still reflect the current machine's local time, and
 `Date.toTime` still reflects its UTC time.
 
@@ -330,8 +330,8 @@ fromSpec (Offset o) (TimeMS t) (DateMS d) =
 {-| Convert a date to a string using a pattern as a template.
 
     Date.toFormattedString
-      "EEEE, MMMM d, y 'at' h:mm a"
-      (Date.fromParts 2007 Mar 15 13 45 56 67)
+        "EEEE, MMMM d, y 'at' h:mm a"
+        (Date.fromParts 2007 Mar 15 13 45 56 67)
     -- "Thursday, March 15, 2007 at 1:45 PM"
 
 Each alphabetic character in the pattern represents date or time information;
@@ -369,8 +369,8 @@ month with an ordinal suffix (e.g. "1st", "15th"), as the current standard does
 not include such a field.
 
     Date.toFormattedString
-      "MMMM ddd, y"
-      (Date.fromParts 2007 Mar 15 13 45 56 67)
+        "MMMM ddd, y"
+        (Date.fromParts 2007 Mar 15 13 45 56 67)
     -- "March 15th, 2007"
 
 -}
@@ -390,7 +390,8 @@ toUtcFormattedString =
 {-| Convenience function for formatting a date to ISO 8601 (extended
 date and time format with local time offset).
 
-    Date.toIsoString (Date.fromParts 2007 Mar 15 13 45 56 67)
+    Date.toIsoString
+        (Date.fromParts 2007 Mar 15 13 45 56 67)
     -- "2007-03-15T13:45:56.067-04:00"
     -- (example has a local offset of UTC-04:00)
 
@@ -403,7 +404,8 @@ toIsoString =
 {-| Convenience function for formatting a date, in UTC representation, to ISO
 8601 (extended date and time format with "Z" for time offset).
 
-    Date.toUtcIsoString (Date.fromParts 2007 Mar 15 13 45 56 67)
+    Date.toUtcIsoString
+        (Date.fromParts 2007 Mar 15 13 45 56 67)
     -- "2007-03-15T17:45:56.067Z"
     -- (example has a local offset of UTC-04:00)
 
@@ -641,7 +643,8 @@ daysToPreviousDayOfWeek d date =
 {-| Round down a date to the beginning of the closest interval. The resulting
 date will be less than or equal to the one provided.
 
-    Date.floor Hour (Date.fromParts 1999 Dec 31 23 59 59 999)
+    Date.floor Hour
+        (Date.fromParts 1999 Dec 31 23 59 59 999)
     -- <31 December 1999, 23:00>
 
 -}
@@ -775,7 +778,8 @@ add interval n date =
 {-| Round up a date to the beginning of the closest interval. The resulting
 date will be greater than or equal to the one provided.
 
-    Date.ceiling Monday (Date.fromParts 1999 Dec 31 23 59 59 999)
+    Date.ceiling Monday
+        (Date.fromParts 1999 Dec 31 23 59 59 999)
     -- <3 January 2000>
 
 -}
@@ -808,8 +812,8 @@ diffMonth date1 date2 =
 {-| Find the difference, as a number of whole intervals, between two dates.
 
     Date.diff Month
-      (Date.fromParts 2007 Mar 15 11 55 0 0)
-      (Date.fromParts 2007 Sep 1 0 0 0 0)
+        (Date.fromParts 2007 Mar 15 11 55 0 0)
+        (Date.fromParts 2007 Sep 1 0 0 0 0)
     -- 5
 
 -}
@@ -856,9 +860,12 @@ between two dates. The list will start at or after the first date, and end
 before the second date.
 
     Date.range Day 2
-      (Date.fromParts 2007 Mar 15 11 55 0 0)
-      (Date.fromParts 2007 Mar 22 0 0 0 0)
-    -- [<16 March 2007>, <18 March 2007>, <20 March 2007>]
+        (Date.fromParts 2007 Mar 15 11 55 0 0)
+        (Date.fromParts 2007 Mar 22 0 0 0 0)
+    -- [ <16 March 2007>
+    -- , <18 March 2007>
+    -- , <20 March 2007>
+    -- ]
 
 -}
 range : Interval -> Int -> Date -> Date -> List Date
