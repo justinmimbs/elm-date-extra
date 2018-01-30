@@ -1,24 +1,8 @@
-module Test.Utilities exposing (..)
+module Utilities exposing (..)
 
 import Date exposing (Date, Month, day, hour, millisecond, minute, month, second, year)
 import Date.Extra exposing (offsetFromUtc)
 import Date.Extra.Facts exposing (daysInMonth, months, msPerMinute)
-import Expect
-import Test exposing (Test, test)
-
-
--- Test
-
-
-equals : a -> a -> Test
-equals a b =
-    test "==" <|
-        \() ->
-            Expect.equal a b
-
-
-
--- Date
 
 
 type alias DateParts =

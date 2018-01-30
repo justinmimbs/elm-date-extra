@@ -3,8 +3,20 @@ module Test.Extract exposing (tests)
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (fractionalDay, monthNumber, ordinalDay, quarter, weekNumber, weekYear, weekdayNumber)
 import Date.Extra.Facts exposing (months)
+import Expect
 import Test exposing (Test, describe, test)
-import Test.Utilities exposing (calendarDatesInMonth, equals)
+import Utilities exposing (calendarDatesInMonth)
+
+
+tests : Test
+tests =
+    describe "Extract"
+        [ test_monthNumber
+        , test_quarter
+        , test_ordinalDay
+        , test_fractionalDay
+        , test_weekDate
+        ]
 
 
 datesInMonth : Int -> Month -> List Date
@@ -21,18 +33,26 @@ datesInYear y =
         months
 
 
-monthNumberTests : Test
-monthNumberTests =
+dateFunctionTest : (Date -> a) -> a -> Date -> Test
+dateFunctionTest f expected date =
+    test (date |> Date.toTime |> toString) <|
+        \() ->
+            f date |> Expect.equal expected
+
+
+test_monthNumber : Test
+test_monthNumber =
     let
-        testsForMonth : ( Month, Int ) -> List Test
-        testsForMonth ( m, n ) =
-            List.map
-                (equals n << monthNumber)
-                (datesInMonth 2016 m)
+        toTest : ( Month, Int ) -> Test
+        toTest ( m, mn ) =
+            describe (toString mn)
+                (datesInMonth 2016 m
+                    |> List.map (dateFunctionTest monthNumber mn)
+                )
     in
     describe "monthNumber" <|
-        List.concatMap
-            testsForMonth
+        List.map
+            toTest
             [ ( Jan, 1 )
             , ( Feb, 2 )
             , ( Mar, 3 )
@@ -48,21 +68,20 @@ monthNumberTests =
             ]
 
 
-quarterTests : Test
-quarterTests =
+test_quarter : Test
+test_quarter =
     let
-        testsForQuarter : ( List Month, Int ) -> List Test
-        testsForQuarter ( monthsInQuarter, q ) =
-            List.map
-                (equals q << quarter)
-            <|
-                List.concatMap
-                    (datesInMonth 2016)
-                    monthsInQuarter
+        toTest : ( List Month, Int ) -> Test
+        toTest ( monthsInQuarter, q ) =
+            describe (toString q)
+                (monthsInQuarter
+                    |> List.concatMap (datesInMonth 2016)
+                    |> List.map (dateFunctionTest quarter q)
+                )
     in
     describe "quarter" <|
-        List.concatMap
-            testsForQuarter
+        List.map
+            toTest
             [ ( [ Jan, Feb, Mar ], 1 )
             , ( [ Apr, May, Jun ], 2 )
             , ( [ Jul, Aug, Sep ], 3 )
@@ -70,37 +89,26 @@ quarterTests =
             ]
 
 
-ordinalDayTests : Test
-ordinalDayTests =
+test_ordinalDay : Test
+test_ordinalDay =
     let
-        ordinalDayTest : Int -> Date -> Test
-        ordinalDayTest i =
-            equals (i + 1) << ordinalDay
+        toTest : Int -> Date -> Test
+        toTest i =
+            dateFunctionTest ordinalDay (i + 1)
     in
     describe "ordinalDay"
-        [ describe "leap year" <|
-            List.indexedMap
-                ordinalDayTest
-                (datesInYear 2016)
-        , describe "non-leap year" <|
-            List.indexedMap
-                ordinalDayTest
-                (datesInYear 2017)
+        [ describe "leap year"
+            (datesInYear 2016 |> List.indexedMap toTest)
+        , describe "non-leap year"
+            (datesInYear 2017 |> List.indexedMap toTest)
         ]
 
 
-fractionalDayTests : Test
-fractionalDayTests =
-    let
-        fractionalDayTest : ( Float, Date ) -> Test
-        fractionalDayTest ( fractional, date ) =
-            equals
-                fractional
-                (fractionalDay date)
-    in
+test_fractionalDay : Test
+test_fractionalDay =
     describe "fractionalDay" <|
         List.map
-            fractionalDayTest
+            (uncurry (dateFunctionTest fractionalDay))
             [ ( 0.0, Date.fromParts 2001 Jan 1 0 0 0 0 )
             , ( 0.25, Date.fromParts 2001 Jan 1 6 0 0 0 )
             , ( 0.5, Date.fromParts 2001 Jan 1 12 0 0 0 )
@@ -109,28 +117,8 @@ fractionalDayTests =
             ]
 
 
-calendarDateToWeekDatePairs =
-    [ ( ( 2005, Jan, 1 ), ( 2004, 53, 6 ) )
-    , ( ( 2005, Jan, 2 ), ( 2004, 53, 7 ) )
-    , ( ( 2005, Dec, 31 ), ( 2005, 52, 6 ) )
-    , ( ( 2007, Jan, 1 ), ( 2007, 1, 1 ) )
-    , ( ( 2007, Dec, 30 ), ( 2007, 52, 7 ) )
-    , ( ( 2007, Dec, 31 ), ( 2008, 1, 1 ) )
-    , ( ( 2008, Jan, 1 ), ( 2008, 1, 2 ) )
-    , ( ( 2008, Dec, 28 ), ( 2008, 52, 7 ) )
-    , ( ( 2008, Dec, 29 ), ( 2009, 1, 1 ) )
-    , ( ( 2008, Dec, 30 ), ( 2009, 1, 2 ) )
-    , ( ( 2008, Dec, 31 ), ( 2009, 1, 3 ) )
-    , ( ( 2009, Jan, 1 ), ( 2009, 1, 4 ) )
-    , ( ( 2009, Dec, 31 ), ( 2009, 53, 4 ) )
-    , ( ( 2010, Jan, 1 ), ( 2009, 53, 5 ) )
-    , ( ( 2010, Jan, 2 ), ( 2009, 53, 6 ) )
-    , ( ( 2010, Jan, 3 ), ( 2009, 53, 7 ) )
-    ]
-
-
-weekDateTests : Test
-weekDateTests =
+test_weekDate : Test
+test_weekDate =
     let
         toWeekDate : Date -> ( Int, Int, Int )
         toWeekDate date =
@@ -138,24 +126,28 @@ weekDateTests =
 
         weekDateTest : ( Int, Month, Int ) -> ( Int, Int, Int ) -> Test
         weekDateTest ( y, m, d ) weekDate =
-            equals
-                weekDate
-                (toWeekDate <| Date.fromCalendarDate y m d)
+            Date.fromCalendarDate y m d
+                |> dateFunctionTest toWeekDate weekDate
     in
     describe "weekYear, weekNumber, weekdayNumber" <|
         List.map
             (\( calendarDate, weekDate ) ->
                 weekDateTest calendarDate weekDate
             )
-            calendarDateToWeekDatePairs
-
-
-tests : Test
-tests =
-    describe "Extract"
-        [ monthNumberTests
-        , quarterTests
-        , ordinalDayTests
-        , fractionalDayTests
-        , weekDateTests
-        ]
+            [ ( ( 2005, Jan, 1 ), ( 2004, 53, 6 ) )
+            , ( ( 2005, Jan, 2 ), ( 2004, 53, 7 ) )
+            , ( ( 2005, Dec, 31 ), ( 2005, 52, 6 ) )
+            , ( ( 2007, Jan, 1 ), ( 2007, 1, 1 ) )
+            , ( ( 2007, Dec, 30 ), ( 2007, 52, 7 ) )
+            , ( ( 2007, Dec, 31 ), ( 2008, 1, 1 ) )
+            , ( ( 2008, Jan, 1 ), ( 2008, 1, 2 ) )
+            , ( ( 2008, Dec, 28 ), ( 2008, 52, 7 ) )
+            , ( ( 2008, Dec, 29 ), ( 2009, 1, 1 ) )
+            , ( ( 2008, Dec, 30 ), ( 2009, 1, 2 ) )
+            , ( ( 2008, Dec, 31 ), ( 2009, 1, 3 ) )
+            , ( ( 2009, Jan, 1 ), ( 2009, 1, 4 ) )
+            , ( ( 2009, Dec, 31 ), ( 2009, 53, 4 ) )
+            , ( ( 2010, Jan, 1 ), ( 2009, 53, 5 ) )
+            , ( ( 2010, Jan, 2 ), ( 2009, 53, 6 ) )
+            , ( ( 2010, Jan, 3 ), ( 2009, 53, 7 ) )
+            ]
