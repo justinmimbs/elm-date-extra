@@ -891,18 +891,21 @@ before the second date.
 range : Interval -> Int -> Date -> Date -> List Date
 range interval step start end =
     let
-        stepBack =
-            max 1 step |> negate
+        first =
+            start |> ceiling interval
     in
-    rangeHelp [] interval stepBack start (end |> add interval stepBack |> ceiling interval)
-
-
-rangeHelp : List Date -> Interval -> Int -> Date -> Date -> List Date
-rangeHelp result interval step start date =
-    if toTime date < toTime start then
-        result
+    if toTime first < toTime end then
+        rangeHelp interval (max 1 step) end [] first
     else
-        rangeHelp (date :: result) interval step start (date |> add interval step)
+        []
+
+
+rangeHelp : Interval -> Int -> Date -> List Date -> Date -> List Date
+rangeHelp interval step end revList date =
+    if toTime date < toTime end then
+        rangeHelp interval step end (date :: revList) (date |> add interval step)
+    else
+        List.reverse revList
 
 
 

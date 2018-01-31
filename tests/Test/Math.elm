@@ -329,138 +329,123 @@ test_diff =
 test_range : Test
 test_range =
     let
-        date =
-            fromParts 2000 Jan 1 0 0 0 0
+        fromDateParts : DateParts -> Date
+        fromDateParts ( y, m, d, hh, mm, ss, ms ) =
+            fromParts y m d hh mm ss ms
+
+        toTest : Interval -> Int -> DateParts -> DateParts -> List DateParts -> Test
+        toTest interval step start end expected =
+            test ([ toString interval, toString step, toString start, toString end ] |> String.join " ") <|
+                \() ->
+                    (Date.range interval step (fromDateParts start) (fromDateParts end) |> List.map toParts)
+                        |> Expect.equal expected
     in
     describe "range"
-        [ test "Millisecond" <|
-            \() ->
-                (Date.range Millisecond 200 date (fromParts 2000 Jan 1 0 0 0 600) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 1, 0, 0, 0, 200 )
-                        , ( 2000, Jan, 1, 0, 0, 0, 400 )
-                        ]
-        , test "Second" <|
-            \() ->
-                (Date.range Second 30 date (fromParts 2000 Jan 1 0 1 30 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 1, 0, 0, 30, 0 )
-                        , ( 2000, Jan, 1, 0, 1, 0, 0 )
-                        ]
-        , test "Minute" <|
-            \() ->
-                (Date.range Minute 45 date (fromParts 2000 Jan 1 2 15 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 1, 0, 45, 0, 0 )
-                        , ( 2000, Jan, 1, 1, 30, 0, 0 )
-                        ]
-        , test "Hour" <|
-            \() ->
-                (Date.range Hour 18 date (fromParts 2000 Jan 3 6 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 1, 18, 0, 0, 0 )
-                        , ( 2000, Jan, 2, 12, 0, 0, 0 )
-                        ]
-        , test "Day" <|
-            \() ->
-                (Date.range Day 2 date (fromParts 2000 Jan 7 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 3, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 5, 0, 0, 0, 0 )
-                        ]
-        , test "Month" <|
-            \() ->
-                (Date.range Month 2 date (fromParts 2000 Jul 1 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Mar, 1, 0, 0, 0, 0 )
-                        , ( 2000, May, 1, 0, 0, 0, 0 )
-                        ]
-        , test "Year" <|
-            \() ->
-                (Date.range Year 10 date (fromParts 2030 Jan 1 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2010, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2020, Jan, 1, 0, 0, 0, 0 )
-                        ]
-        , test "Quarter" <|
-            \() ->
-                (Date.range Quarter 1 date (fromParts 2000 Sep 1 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Apr, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jul, 1, 0, 0, 0, 0 )
-                        ]
-        , test "Week" <|
-            \() ->
-                (Date.range Week 2 date (fromParts 2000 Feb 14 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 3, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 17, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 31, 0, 0, 0, 0 )
-                        ]
-        , test "Monday" <|
-            \() ->
-                (Date.range Monday 2 date (fromParts 2000 Feb 14 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 3, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 17, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 31, 0, 0, 0, 0 )
-                        ]
-        , test "Tuesday" <|
-            \() ->
-                (Date.range Tuesday 2 date (fromParts 2000 Feb 15 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 4, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 18, 0, 0, 0, 0 )
-                        , ( 2000, Feb, 1, 0, 0, 0, 0 )
-                        ]
-        , test "Wednesday" <|
-            \() ->
-                (Date.range Wednesday 2 date (fromParts 2000 Feb 16 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 5, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 19, 0, 0, 0, 0 )
-                        , ( 2000, Feb, 2, 0, 0, 0, 0 )
-                        ]
-        , test "Thursday" <|
-            \() ->
-                (Date.range Thursday 2 date (fromParts 2000 Feb 17 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 6, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 20, 0, 0, 0, 0 )
-                        , ( 2000, Feb, 3, 0, 0, 0, 0 )
-                        ]
-        , test "Friday" <|
-            \() ->
-                (Date.range Friday 2 date (fromParts 2000 Feb 18 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 7, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 21, 0, 0, 0, 0 )
-                        , ( 2000, Feb, 4, 0, 0, 0, 0 )
-                        ]
-        , test "Saturday" <|
-            \() ->
-                (Date.range Saturday 2 date (fromParts 2000 Feb 12 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 1, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 15, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 29, 0, 0, 0, 0 )
-                        ]
-        , test "Sunday" <|
-            \() ->
-                (Date.range Sunday 2 date (fromParts 2000 Feb 13 0 0 0 0) |> List.map toParts)
-                    |> Expect.equal
-                        [ ( 2000, Jan, 2, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 16, 0, 0, 0, 0 )
-                        , ( 2000, Jan, 30, 0, 0, 0, 0 )
-                        ]
+        [ toTest Millisecond 200 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 1, 0, 0, 0, 600 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Jan, 1, 0, 0, 0, 200 )
+            , ( 2000, Jan, 1, 0, 0, 0, 400 )
+            ]
+        , toTest Second 30 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 1, 0, 1, 30, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Jan, 1, 0, 0, 30, 0 )
+            , ( 2000, Jan, 1, 0, 1, 0, 0 )
+            ]
+        , toTest Minute 45 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 1, 2, 15, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Jan, 1, 0, 45, 0, 0 )
+            , ( 2000, Jan, 1, 1, 30, 0, 0 )
+            ]
+        , toTest Hour 18 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 3, 6, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Jan, 1, 18, 0, 0, 0 )
+            , ( 2000, Jan, 2, 12, 0, 0, 0 )
+            ]
+        , toTest Day 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 7, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Jan, 3, 0, 0, 0, 0 )
+            , ( 2000, Jan, 5, 0, 0, 0, 0 )
+            ]
+        , toTest Month 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jul, 1, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Mar, 1, 0, 0, 0, 0 )
+            , ( 2000, May, 1, 0, 0, 0, 0 )
+            ]
+        , toTest Year 10 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2030, Jan, 1, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2010, Jan, 1, 0, 0, 0, 0 )
+            , ( 2020, Jan, 1, 0, 0, 0, 0 )
+            ]
+        , toTest Quarter 1 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Sep, 1, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Apr, 1, 0, 0, 0, 0 )
+            , ( 2000, Jul, 1, 0, 0, 0, 0 )
+            ]
+        , toTest Week 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 14, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 3, 0, 0, 0, 0 )
+            , ( 2000, Jan, 17, 0, 0, 0, 0 )
+            , ( 2000, Jan, 31, 0, 0, 0, 0 )
+            ]
+        , toTest Monday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 14, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 3, 0, 0, 0, 0 )
+            , ( 2000, Jan, 17, 0, 0, 0, 0 )
+            , ( 2000, Jan, 31, 0, 0, 0, 0 )
+            ]
+        , toTest Tuesday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 15, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 4, 0, 0, 0, 0 )
+            , ( 2000, Jan, 18, 0, 0, 0, 0 )
+            , ( 2000, Feb, 1, 0, 0, 0, 0 )
+            ]
+        , toTest Wednesday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 16, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 5, 0, 0, 0, 0 )
+            , ( 2000, Jan, 19, 0, 0, 0, 0 )
+            , ( 2000, Feb, 2, 0, 0, 0, 0 )
+            ]
+        , toTest Thursday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 17, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 6, 0, 0, 0, 0 )
+            , ( 2000, Jan, 20, 0, 0, 0, 0 )
+            , ( 2000, Feb, 3, 0, 0, 0, 0 )
+            ]
+        , toTest Friday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 18, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 7, 0, 0, 0, 0 )
+            , ( 2000, Jan, 21, 0, 0, 0, 0 )
+            , ( 2000, Feb, 4, 0, 0, 0, 0 )
+            ]
+        , toTest Saturday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 12, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+            , ( 2000, Jan, 15, 0, 0, 0, 0 )
+            , ( 2000, Jan, 29, 0, 0, 0, 0 )
+            ]
+        , toTest Sunday 2 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 13, 0, 0, 0, 0 ) <|
+            [ ( 2000, Jan, 2, 0, 0, 0, 0 )
+            , ( 2000, Jan, 16, 0, 0, 0, 0 )
+            , ( 2000, Jan, 30, 0, 0, 0, 0 )
+            ]
+        , describe "example"
+            [ toTest Day 2 ( 2007, Mar, 15, 11, 55, 0, 0 ) ( 2007, Mar, 22, 0, 0, 0, 0 ) <|
+                [ ( 2007, Mar, 16, 0, 0, 0, 0 )
+                , ( 2007, Mar, 18, 0, 0, 0, 0 )
+                , ( 2007, Mar, 20, 0, 0, 0, 0 )
+                ]
+            ]
+        , describe "begins with the interval nearest to start date"
+            [ toTest Day 10 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 30, 0, 0, 0, 0 ) <|
+                [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+                , ( 2000, Jan, 11, 0, 0, 0, 0 )
+                , ( 2000, Jan, 21, 0, 0, 0, 0 )
+                ]
+            , toTest Day 10 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Jan, 31, 0, 0, 0, 0 ) <|
+                [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+                , ( 2000, Jan, 11, 0, 0, 0, 0 )
+                , ( 2000, Jan, 21, 0, 0, 0, 0 )
+                ]
+            , toTest Day 10 ( 2000, Jan, 1, 0, 0, 0, 0 ) ( 2000, Feb, 1, 0, 0, 0, 0 ) <|
+                [ ( 2000, Jan, 1, 0, 0, 0, 0 )
+                , ( 2000, Jan, 11, 0, 0, 0, 0 )
+                , ( 2000, Jan, 21, 0, 0, 0, 0 )
+                , ( 2000, Jan, 31, 0, 0, 0, 0 )
+                ]
+            ]
         , test "returns a list of days as expected" <|
             \() ->
                 (Date.range Day 1 (fromParts 2020 Jan 1 0 0 0 0) (fromParts 2021 Jan 1 0 0 0 0) |> List.map Date.toTime)
@@ -468,7 +453,7 @@ test_range =
                         (calendarDatesInYear 2020 |> List.map (\( y, m, d ) -> fromParts y m d 0 0 0 0 |> Date.toTime))
         , test "can return the empty list" <|
             \() ->
-                (Date.range Millisecond 1 date date |> List.map toParts)
+                (Date.range Millisecond 1 (fromParts 2020 Jan 1 0 0 0 0) (fromParts 2020 Jan 1 0 0 0 0) |> List.map toParts)
                     |> Expect.equal
                         []
         , describe "can return a large list (tail recursion)"
