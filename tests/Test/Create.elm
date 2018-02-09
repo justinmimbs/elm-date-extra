@@ -34,7 +34,7 @@ test_fromParts =
                 , ( 2000, Jan, 1, 0, 0, 0, 0 )
                 , ( 2008, Dec, 31, 20, 30, 40, 567 )
                 ]
-        , describe "clamps parts to their upper bounds"
+        , describe "clamps each part to its upper bound"
             [ test "days" <| \() -> fromParts 2001 Feb 31 0 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 0, 0 )
             , test "days, leap" <| \() -> fromParts 2000 Feb 31 0 0 0 0 |> toParts |> Expect.equal ( 2000, Feb, 29, 0, 0, 0, 0 )
             , test "hours" <| \() -> fromParts 2001 Feb 28 27 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 23, 0, 0, 0 )
@@ -42,7 +42,7 @@ test_fromParts =
             , test "seconds" <| \() -> fromParts 2001 Feb 28 0 0 63 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 59, 0 )
             , test "milliseconds" <| \() -> fromParts 2001 Feb 28 0 0 0 1003 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 0, 999 )
             ]
-        , describe "clamps parts to their lower bounds"
+        , describe "clamps each part to its lower bound"
             [ test "days" <| \() -> fromParts 2001 Feb 0 0 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
             , test "hours" <| \() -> fromParts 2001 Feb 1 -1 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
             , test "minutes" <| \() -> fromParts 2001 Feb 1 0 -1 0 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
@@ -149,11 +149,11 @@ test_fromIsoString =
                     fromIsoString string |> Result.toMaybe |> Maybe.map toDateParts |> Expect.equal expected
     in
     describe "fromIsoString"
-        [ describe "local" <|
+        [ describe "converts date strings in local time" <|
             List.map
                 (fromIsoStringTest toParts)
                 dateAndDateTimePairs
-        , describe "utc" <|
+        , describe "converts date strings in UTC" <|
             List.map
                 (fromIsoStringTest (toParts << toUtc))
                 (List.concatMap
@@ -164,7 +164,7 @@ test_fromIsoString =
                     , "Z"
                     ]
                 )
-        , describe "offset -07:00" <|
+        , describe "converts date strings in offset -07:00" <|
             List.map
                 (fromIsoStringTest (toParts << toTimeOffset -420))
                 (List.concatMap
@@ -174,7 +174,7 @@ test_fromIsoString =
                     , "-07"
                     ]
                 )
-        , describe "offset +04:30" <|
+        , describe "converts date strings in offset +04:30" <|
             List.map
                 (fromIsoStringTest (toParts << toTimeOffset 270))
                 (List.concatMap
@@ -183,7 +183,7 @@ test_fromIsoString =
                     , "+0430"
                     ]
                 )
-        , describe "invalid format" <|
+        , describe "fails to convert malformed date strings" <|
             List.map
                 (fromIsoStringTest toParts)
                 [ ( "2008-1231", Nothing )
@@ -200,6 +200,30 @@ test_fromIsoString =
                 , ( "2008-12-31-07:00", Nothing )
                 , ( "2008-12-07:00", Nothing )
                 , ( "2008-07:00", Nothing )
+                ]
+        , describe "fails to convert invalid dates" <|
+            List.map
+                (fromIsoStringTest toParts)
+                [ ( "2008-00", Nothing )
+                , ( "2008-13", Nothing )
+                , ( "2008-01-00", Nothing )
+                , ( "2007-02-29", Nothing )
+                , ( "2008-02-30", Nothing )
+                , ( "2008-04-31", Nothing )
+                , ( "2008-01-32", Nothing )
+                , ( "2008-000", Nothing )
+                , ( "2007-366", Nothing )
+                , ( "2008-367", Nothing )
+                , ( "2008-W00", Nothing )
+                , ( "2008-W53", Nothing )
+                , ( "2009-W54", Nothing )
+                , ( "2008-W01-0", Nothing )
+                , ( "2008-W01-8", Nothing )
+                , ( "2008-01-01T24:00", Nothing )
+                , ( "2008-01-01T00:60", Nothing )
+                , ( "2008-01-01T00:00:60", Nothing )
+                , ( "2008-01-01T00:00:00+24:00", Nothing )
+                , ( "2008-01-01T00:00:00+00:60", Nothing )
                 ]
         ]
 
