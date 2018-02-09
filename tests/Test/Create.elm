@@ -1,7 +1,7 @@
 module Test.Create exposing (tests)
 
-import Date exposing (Date, Month(..))
-import Date.Extra exposing (atTime, calendarDate, fromCalendarDate, fromIsoString, fromParts, fromSpec, local, noTime, offset, ordinalDate, utc, weekDate)
+import Date exposing (Date, Day(..), Month(..))
+import Date.Extra exposing (calendarDate, fromCalendarDate, fromIsoString, fromParts, fromSpec, local, midnight, offset, ordinalDate, time, utc, weekDate)
 import Expect
 import Regex exposing (HowMany(All), Regex, regex, replace)
 import String
@@ -34,19 +34,20 @@ test_fromParts =
                 , ( 2000, Jan, 1, 0, 0, 0, 0 )
                 , ( 2008, Dec, 31, 20, 30, 40, 567 )
                 ]
-        , describe "allows out-of-range parts to overflow"
-            [ test "days" <| \() -> fromParts 2001 Feb 31 0 0 0 0 |> toParts |> Expect.equal ( 2001, Mar, 3, 0, 0, 0, 0 )
-            , test "hours" <| \() -> fromParts 2001 Feb 28 27 0 0 0 |> toParts |> Expect.equal ( 2001, Mar, 1, 3, 0, 0, 0 )
-            , test "minutes" <| \() -> fromParts 2001 Feb 28 0 63 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 1, 3, 0, 0 )
-            , test "seconds" <| \() -> fromParts 2001 Feb 28 0 0 63 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 1, 3, 0 )
-            , test "milliseconds" <| \() -> fromParts 2001 Feb 28 0 0 0 1003 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 1, 3 )
+        , describe "clamps parts to their upper bounds"
+            [ test "days" <| \() -> fromParts 2001 Feb 31 0 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 0, 0 )
+            , test "days, leap" <| \() -> fromParts 2000 Feb 31 0 0 0 0 |> toParts |> Expect.equal ( 2000, Feb, 29, 0, 0, 0, 0 )
+            , test "hours" <| \() -> fromParts 2001 Feb 28 27 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 23, 0, 0, 0 )
+            , test "minutes" <| \() -> fromParts 2001 Feb 28 0 63 0 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 59, 0, 0 )
+            , test "seconds" <| \() -> fromParts 2001 Feb 28 0 0 63 0 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 59, 0 )
+            , test "milliseconds" <| \() -> fromParts 2001 Feb 28 0 0 0 1003 |> toParts |> Expect.equal ( 2001, Feb, 28, 0, 0, 0, 999 )
             ]
-        , describe "allows out-of-range parts to underflow"
-            [ test "days" <| \() -> fromParts 2001 Feb 0 0 0 0 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 0, 0, 0, 0 )
-            , test "hours" <| \() -> fromParts 2001 Feb 1 -1 0 0 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 0, 0, 0 )
-            , test "minutes" <| \() -> fromParts 2001 Feb 1 0 -1 0 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 59, 0, 0 )
-            , test "seconds" <| \() -> fromParts 2001 Feb 1 0 0 -1 0 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 59, 59, 0 )
-            , test "milliseconds" <| \() -> fromParts 2001 Feb 1 0 0 0 -1 |> toParts |> Expect.equal ( 2001, Jan, 31, 23, 59, 59, 999 )
+        , describe "clamps parts to their lower bounds"
+            [ test "days" <| \() -> fromParts 2001 Feb 0 0 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
+            , test "hours" <| \() -> fromParts 2001 Feb 1 -1 0 0 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
+            , test "minutes" <| \() -> fromParts 2001 Feb 1 0 -1 0 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
+            , test "seconds" <| \() -> fromParts 2001 Feb 1 0 0 -1 0 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
+            , test "milliseconds" <| \() -> fromParts 2001 Feb 1 0 0 0 -1 |> toParts |> Expect.equal ( 2001, Feb, 1, 0, 0, 0, 0 )
             ]
         ]
 
@@ -145,7 +146,7 @@ test_fromIsoString =
         fromIsoStringTest toDateParts ( string, expected ) =
             test string <|
                 \() ->
-                    fromIsoString string |> Maybe.map toDateParts |> Expect.equal expected
+                    fromIsoString string |> Result.toMaybe |> Maybe.map toDateParts |> Expect.equal expected
     in
     describe "fromIsoString"
         [ describe "local" <|
@@ -182,7 +183,7 @@ test_fromIsoString =
                     , "+0430"
                     ]
                 )
-        , describe "invalid" <|
+        , describe "invalid format" <|
             List.map
                 (fromIsoStringTest toParts)
                 [ ( "2008-1231", Nothing )
@@ -207,81 +208,81 @@ test_fromSpec : Test
 test_fromSpec =
     describe "fromSpec"
         [ describe "local"
-            [ test "noTime calendarDate" <|
+            [ test "midnight calendarDate" <|
                 \() ->
-                    (fromSpec local noTime (calendarDate 2008 Dec 31) |> toParts)
+                    (fromSpec (calendarDate 2008 Dec 31) midnight local |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "noTime ordinalDate" <|
+            , test "midnight ordinalDate" <|
                 \() ->
-                    (fromSpec local noTime (ordinalDate 2008 366) |> toParts)
+                    (fromSpec (ordinalDate 2008 366) midnight local |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "noTime weekDate" <|
+            , test "midnight weekDate" <|
                 \() ->
-                    (fromSpec local noTime (weekDate 2009 1 3) |> toParts)
+                    (fromSpec (weekDate 2009 1 Wed) midnight local |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "atTime calendarDate" <|
+            , test "time calendarDate" <|
                 \() ->
-                    (fromSpec local (atTime 20 30 40 567) (calendarDate 2008 Dec 31) |> toParts)
+                    (fromSpec (calendarDate 2008 Dec 31) (time 20 30 40 567) local |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
-            , test "atTime ordinalDate" <|
+            , test "time ordinalDate" <|
                 \() ->
-                    (fromSpec local (atTime 20 30 40 567) (ordinalDate 2008 366) |> toParts)
+                    (fromSpec (ordinalDate 2008 366) (time 20 30 40 567) local |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
-            , test "atTime weekDate" <|
+            , test "time weekDate" <|
                 \() ->
-                    (fromSpec local (atTime 20 30 40 567) (weekDate 2009 1 3) |> toParts)
+                    (fromSpec (weekDate 2009 1 Wed) (time 20 30 40 567) local |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
             ]
         , describe "utc"
-            [ test "noTime calendarDate" <|
+            [ test "midnight calendarDate" <|
                 \() ->
-                    (fromSpec utc noTime (calendarDate 2008 Dec 31) |> toUtc |> toParts)
+                    (fromSpec (calendarDate 2008 Dec 31) midnight utc |> toUtc |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "noTime ordinalDate" <|
+            , test "midnight ordinalDate" <|
                 \() ->
-                    (fromSpec utc noTime (ordinalDate 2008 366) |> toUtc |> toParts)
+                    (fromSpec (ordinalDate 2008 366) midnight utc |> toUtc |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "noTime weekDate" <|
+            , test "midnight weekDate" <|
                 \() ->
-                    (fromSpec utc noTime (weekDate 2009 1 3) |> toUtc |> toParts)
+                    (fromSpec (weekDate 2009 1 Wed) midnight utc |> toUtc |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "atTime calendarDate" <|
+            , test "time calendarDate" <|
                 \() ->
-                    (fromSpec utc (atTime 20 30 40 567) (calendarDate 2008 Dec 31) |> toUtc |> toParts)
+                    (fromSpec (calendarDate 2008 Dec 31) (time 20 30 40 567) utc |> toUtc |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
-            , test "atTime ordinalDate" <|
+            , test "time ordinalDate" <|
                 \() ->
-                    (fromSpec utc (atTime 20 30 40 567) (ordinalDate 2008 366) |> toUtc |> toParts)
+                    (fromSpec (ordinalDate 2008 366) (time 20 30 40 567) utc |> toUtc |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
-            , test "atTime weekDate" <|
+            , test "time weekDate" <|
                 \() ->
-                    (fromSpec utc (atTime 20 30 40 567) (weekDate 2009 1 3) |> toUtc |> toParts)
+                    (fromSpec (weekDate 2009 1 Wed) (time 20 30 40 567) utc |> toUtc |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
             ]
         , describe "offset"
-            [ test "noTime calendarDate" <|
+            [ test "midnight calendarDate" <|
                 \() ->
-                    (fromSpec (offset 60) noTime (calendarDate 2008 Dec 31) |> toTimeOffset 60 |> toParts)
+                    (fromSpec (calendarDate 2008 Dec 31) midnight (offset 60) |> toTimeOffset 60 |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "noTime ordinalDate" <|
+            , test "midnight ordinalDate" <|
                 \() ->
-                    (fromSpec (offset 60) noTime (ordinalDate 2008 366) |> toTimeOffset 60 |> toParts)
+                    (fromSpec (ordinalDate 2008 366) midnight (offset 60) |> toTimeOffset 60 |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "noTime weekDate" <|
+            , test "midnight weekDate" <|
                 \() ->
-                    (fromSpec (offset 60) noTime (weekDate 2009 1 3) |> toTimeOffset 60 |> toParts)
+                    (fromSpec (weekDate 2009 1 Wed) midnight (offset 60) |> toTimeOffset 60 |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 0, 0, 0, 0 )
-            , test "atTime calendarDate" <|
+            , test "time calendarDate" <|
                 \() ->
-                    (fromSpec (offset 60) (atTime 20 30 40 567) (calendarDate 2008 Dec 31) |> toTimeOffset 60 |> toParts)
+                    (fromSpec (calendarDate 2008 Dec 31) (time 20 30 40 567) (offset 60) |> toTimeOffset 60 |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
-            , test "atTime ordinalDate" <|
+            , test "time ordinalDate" <|
                 \() ->
-                    (fromSpec (offset 60) (atTime 20 30 40 567) (ordinalDate 2008 366) |> toTimeOffset 60 |> toParts)
+                    (fromSpec (ordinalDate 2008 366) (time 20 30 40 567) (offset 60) |> toTimeOffset 60 |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
-            , test "atTime weekDate" <|
+            , test "time weekDate" <|
                 \() ->
-                    (fromSpec (offset 60) (atTime 20 30 40 567) (weekDate 2009 1 3) |> toTimeOffset 60 |> toParts)
+                    (fromSpec (weekDate 2009 1 Wed) (time 20 30 40 567) (offset 60) |> toTimeOffset 60 |> toParts)
                         |> Expect.equal ( 2008, Dec, 31, 20, 30, 40, 567 )
             ]
         ]

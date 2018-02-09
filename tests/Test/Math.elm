@@ -63,9 +63,9 @@ test_isBetween =
         [ test "1 3 2" <| \() -> Date.isBetween date1 date3 date2 |> Expect.equal True
         , test "1 3 3" <| \() -> Date.isBetween date1 date3 date3 |> Expect.equal True
         , test "1 3 1" <| \() -> Date.isBetween date1 date3 date1 |> Expect.equal True
-        , test "3 1 2" <| \() -> Date.isBetween date3 date1 date2 |> Expect.equal True
-        , test "3 1 3" <| \() -> Date.isBetween date3 date1 date3 |> Expect.equal True
-        , test "3 1 1" <| \() -> Date.isBetween date3 date1 date1 |> Expect.equal True
+        , test "3 1 2" <| \() -> Date.isBetween date3 date1 date2 |> Expect.equal False
+        , test "3 1 3" <| \() -> Date.isBetween date3 date1 date3 |> Expect.equal False
+        , test "3 1 1" <| \() -> Date.isBetween date3 date1 date1 |> Expect.equal False
         , test "1 2 3" <| \() -> Date.isBetween date1 date2 date3 |> Expect.equal False
         , test "2 1 3" <| \() -> Date.isBetween date2 date1 date3 |> Expect.equal False
         ]

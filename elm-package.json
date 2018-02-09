@@ -1,5 +1,5 @@
 {
-    "version": "2.1.1",
+    "version": "3.0.0",
     "summary": "Extra functions for working with Date",
     "repository": "https://github.com/justinmimbs/elm-date-extra.git",
     "license": "BSD3",
@@ -7,8 +7,7 @@
         "src"
     ],
     "exposed-modules": [
-        "Date.Extra",
-        "Date.Extra.Facts"
+        "Date.Extra"
     ],
     "dependencies": {
         "elm-lang/core": "5.0.0 <= v < 6.0.0"

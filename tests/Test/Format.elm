@@ -1,7 +1,7 @@
 module Test.Format exposing (tests)
 
 import Date exposing (Date, Month(..))
-import Date.Extra as Date exposing (atTime, calendarDate, noTime, toFormattedString, toIsoString, toUtcFormattedString, toUtcIsoString, utc)
+import Date.Extra as Date exposing (calendarDate, time, utc)
 import Expect
 import Regex exposing (contains, regex)
 import Test exposing (Test, describe, test)
@@ -24,9 +24,7 @@ test_toFormattedString =
         toTest date ( pattern, expected ) =
             test pattern <|
                 \() ->
-                    Expect.equal
-                        expected
-                        (toFormattedString pattern date)
+                    date |> Date.toFormattedString pattern |> Expect.equal expected
     in
     describe "toFormattedString"
         [ describe "symbols" <|
@@ -157,14 +155,12 @@ test_toUtcFormattedString =
         toTest date ( pattern, expected ) =
             test pattern <|
                 \() ->
-                    Expect.equal
-                        expected
-                        (toUtcFormattedString pattern date)
+                    date |> Date.toUtcFormattedString pattern |> Expect.equal expected
     in
     describe "toUtcFormattedString"
         [ describe "symbols" <|
             List.map
-                (toTest <| Date.fromSpec utc (atTime 3 4 5 67) (calendarDate 2001 Jan 2))
+                (toTest <| Date.fromSpec (calendarDate 2001 Jan 2) (time 3 4 5 67) utc)
                 [ ( "y", "2001" )
                 , ( "yy", "01" )
                 , ( "yyy", "2001" )
@@ -263,8 +259,7 @@ test_toIsoString =
     in
     test "toIsoString" <|
         \() ->
-            Expect.true "uses the local offset"
-                (date |> toIsoString |> contains expected)
+            date |> Date.toIsoString |> contains expected |> Expect.true "uses the local offset"
 
 
 test_toUtcIsoString : Test
@@ -272,7 +267,6 @@ test_toUtcIsoString =
     describe "toUtcIsoString"
         [ test "uses the UTC offset" <|
             \() ->
-                Expect.equal
-                    "2001-01-02T20:30:40.567Z"
-                    (toUtcIsoString <| Date.fromSpec utc (atTime 20 30 40 567) (calendarDate 2001 Jan 2))
+                (Date.fromSpec (calendarDate 2001 Jan 2) (time 20 30 40 567) utc |> Date.toUtcIsoString)
+                    |> Expect.equal "2001-01-02T20:30:40.567Z"
         ]

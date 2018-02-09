@@ -2,10 +2,9 @@ module Test.Extract exposing (tests)
 
 import Date exposing (Date, Month(..))
 import Date.Extra as Date exposing (fractionalDay, monthNumber, ordinalDay, quarter, weekNumber, weekYear, weekdayNumber)
-import Date.Extra.Facts exposing (months)
 import Expect
 import Test exposing (Test, describe, test)
-import Utilities exposing (calendarDatesInMonth)
+import Utilities exposing (calendarDatesInMonth, calendarDatesInYear)
 
 
 tests : Test
@@ -22,15 +21,15 @@ tests =
 datesInMonth : Int -> Month -> List Date
 datesInMonth y m =
     List.map
-        (\( y, m, d ) -> Date.fromCalendarDate y m d)
+        (\( _, _, d ) -> Date.fromCalendarDate y m d)
         (calendarDatesInMonth y m)
 
 
 datesInYear : Int -> List Date
 datesInYear y =
-    List.concatMap
-        (datesInMonth y)
-        months
+    List.map
+        (\( _, m, d ) -> Date.fromCalendarDate y m d)
+        (calendarDatesInYear y)
 
 
 dateFunctionTest : (Date -> a) -> a -> Date -> Test

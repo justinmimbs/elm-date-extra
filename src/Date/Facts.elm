@@ -1,17 +1,16 @@
-module Date.Extra.Facts
+module Date.Facts
     exposing
-        ( dayOfWeekFromWeekdayNumber
-        , daysBeforeStartOfMonth
+        ( daysBeforeMonth
         , daysInMonth
         , isLeapYear
-        , monthFromMonthNumber
-        , monthNumberFromMonth
-        , months
+        , monthToNumber
         , msPerDay
         , msPerHour
         , msPerMinute
         , msPerSecond
-        , weekdayNumberFromDayOfWeek
+        , numberToMonth
+        , numberToWeekday
+        , weekdayToNumber
         )
 
 {-| This module contains reference information that may be useful when working with
@@ -20,12 +19,12 @@ dates, but it doesn't contain functions for working with the `Date` type directl
 
 # Basics
 
-@docs isLeapYear, daysInMonth, daysBeforeStartOfMonth, months
+@docs isLeapYear, daysInMonth, daysBeforeMonth
 
 
 # Conversions
 
-@docs monthNumberFromMonth, monthFromMonthNumber, weekdayNumberFromDayOfWeek, dayOfWeekFromWeekdayNumber
+@docs monthToNumber, numberToMonth, weekdayToNumber, numberToWeekday
 
 
 # Constants
@@ -97,12 +96,19 @@ daysInMonth y m =
 
 {-|
 
-    daysBeforeStartOfMonth 2000 Mar -- 60
-    daysBeforeStartOfMonth 2001 Mar -- 59
+    daysBeforeMonth 2000 Mar -- 60
+    daysBeforeMonth 2001 Mar -- 59
 
 -}
-daysBeforeStartOfMonth : Int -> Month -> Int
-daysBeforeStartOfMonth y m =
+daysBeforeMonth : Int -> Month -> Int
+daysBeforeMonth y m =
+    let
+        leapDays =
+            if isLeapYear y then
+                1
+            else
+                0
+    in
     case m of
         Jan ->
             0
@@ -111,80 +117,43 @@ daysBeforeStartOfMonth y m =
             31
 
         Mar ->
-            if isLeapYear y then
-                60
-            else
-                59
+            59 + leapDays
 
         Apr ->
-            if isLeapYear y then
-                91
-            else
-                90
+            90 + leapDays
 
         May ->
-            if isLeapYear y then
-                121
-            else
-                120
+            120 + leapDays
 
         Jun ->
-            if isLeapYear y then
-                152
-            else
-                151
+            151 + leapDays
 
         Jul ->
-            if isLeapYear y then
-                182
-            else
-                181
+            181 + leapDays
 
         Aug ->
-            if isLeapYear y then
-                213
-            else
-                212
+            212 + leapDays
 
         Sep ->
-            if isLeapYear y then
-                244
-            else
-                243
+            243 + leapDays
 
         Oct ->
-            if isLeapYear y then
-                274
-            else
-                273
+            273 + leapDays
 
         Nov ->
-            if isLeapYear y then
-                305
-            else
-                304
+            304 + leapDays
 
         Dec ->
-            if isLeapYear y then
-                335
-            else
-                334
-
-
-{-| An ordered list of `Date.Month` values.
--}
-months : List Month
-months =
-    [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
+            334 + leapDays
 
 
 {-|
 
-    monthNumberFromMonth Jan -- 1
+    monthToNumber Jan -- 1
 
 -}
-monthNumberFromMonth : Month -> Int
-monthNumberFromMonth m =
+monthToNumber : Month -> Int
+monthToNumber m =
     case m of
         Jan ->
             1
@@ -225,12 +194,12 @@ monthNumberFromMonth m =
 
 {-|
 
-    monthFromMonthNumber 1 -- Jan
+    numberToMonth 1 -- Jan
 
 -}
-monthFromMonthNumber : Int -> Month
-monthFromMonthNumber n =
-    case n of
+numberToMonth : Int -> Month
+numberToMonth n =
+    case max 1 n of
         1 ->
             Jan
 
@@ -270,11 +239,11 @@ monthFromMonthNumber n =
 
 {-|
 
-    weekdayNumberFromDayOfWeek Mon -- 1
+    weekdayToNumber Mon -- 1
 
 -}
-weekdayNumberFromDayOfWeek : Day -> Int
-weekdayNumberFromDayOfWeek d =
+weekdayToNumber : Day -> Int
+weekdayToNumber d =
     case d of
         Mon ->
             1
@@ -300,12 +269,12 @@ weekdayNumberFromDayOfWeek d =
 
 {-|
 
-    dayOfWeekFromWeekdayNumber 1 -- Mon
+    numberToWeekday 1 -- Mon
 
 -}
-dayOfWeekFromWeekdayNumber : Int -> Day
-dayOfWeekFromWeekdayNumber n =
-    case n of
+numberToWeekday : Int -> Day
+numberToWeekday n =
+    case max 1 n of
         1 ->
             Mon
 
