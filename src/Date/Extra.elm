@@ -218,7 +218,7 @@ local =
     Local
 
 
-{-| Create a `Date` from a specified time offset, time of day, and day.
+{-| Create a `Date` from a specified day, time of day, and time offset.
 
     Date.fromSpec
         (calendarDate 2000 Jan 1)
@@ -227,7 +227,7 @@ local =
     -- <1 January 2000, local time>
 
     Date.fromSpec
-        (weekDate 2009 1 1)
+        (weekDate 2009 1 Mon)
         midnight
         utc
     -- <29 December 2008, UTC>
@@ -356,9 +356,9 @@ isoDateRegex =
             "\\-?(\\d{3})"
 
         time =
-            -- hh               mm             ss          .f           Z      +/-     hh             mm
-            -- 9          10    11             12          13           14     15      16             17
-            "T(\\d{2})(?:(\\:)?(\\d{2})(?:\\10(\\d{2}))?)?(\\.\\d+)?(?:(Z)|(?:([+\\-])(\\d{2})(?:\\:?(\\d{2}))?))?"
+            -- hh               mm             ss          .f              Z      +/-      hh             mm
+            -- 9          10    11             12          13              14     15       16             17
+            "T(\\d{2})(?:(\\:)?(\\d{2})(?:\\10(\\d{2}))?)?([\\.,]\\d+)?(?:(Z)|(?:([+−\\-])(\\d{2})(?:\\:?(\\d{2}))?))?"
     in
     regex <| "^" ++ year ++ "(?:" ++ cal ++ "|" ++ week ++ "|" ++ ord ++ ")?" ++ "(?:" ++ time ++ ")?$"
 
@@ -391,7 +391,7 @@ timeFromMatches : Maybe String -> Maybe String -> Maybe String -> Maybe String -
 timeFromMatches timeHH timeMM timeSS timeF =
     let
         fractional =
-            timeF |> Maybe.andThen (String.toFloat >> Result.toMaybe) |> Maybe.withDefault 0.0
+            timeF |> Maybe.andThen (Regex.replace All (regex ",") (\_ -> ".") >> String.toFloat >> Result.toMaybe) |> Maybe.withDefault 0.0
 
         ( hh, mm, ss ) =
             case [ timeHH, timeMM, timeSS ] |> List.map (Maybe.andThen (String.toFloat >> Result.toMaybe)) of

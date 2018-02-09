@@ -3,7 +3,7 @@ module Test.Create exposing (tests)
 import Date exposing (Date, Day(..), Month(..))
 import Date.Extra exposing (calendarDate, fromCalendarDate, fromIsoString, fromParts, fromSpec, local, midnight, offset, ordinalDate, time, utc, weekDate)
 import Expect
-import Regex exposing (HowMany(All), Regex, regex, replace)
+import Regex exposing (HowMany(All), Regex, regex)
 import String
 import Test exposing (Test, describe, test)
 import Utilities exposing (DateParts, calendarDatesInYear, toParts, toTimeOffset, toUtc)
@@ -101,26 +101,29 @@ test_fromIsoString =
             , ( "T20:30:40.567", ( 20, 30, 40, 567 ) )
             ]
 
-        basicFromExtended : Regex -> ( String, a ) -> Maybe ( String, a )
-        basicFromExtended symbol ( extended, parts ) =
+        replaceInFirst : Regex -> String -> ( String, a ) -> Maybe ( String, a )
+        replaceInFirst target replacement ( original, b ) =
             let
-                basic =
-                    replace All symbol (\_ -> "") extended
+                modified =
+                    original |> Regex.replace All target (\_ -> replacement)
             in
-            if basic == extended then
+            if modified == original then
                 Nothing
             else
-                Just ( basic, parts )
+                Just ( modified, b )
 
         -- list of "<date>" and "<date>T<time>" formatted strings
         dateAndDateTimePairs : List ( String, Maybe DateParts )
         dateAndDateTimePairs =
             let
                 datePairs =
-                    extendedDatePairs ++ List.filterMap (basicFromExtended (regex "-")) extendedDatePairs
+                    extendedDatePairs
+                        ++ (extendedDatePairs |> List.filterMap (replaceInFirst (regex "\\-") ""))
 
                 timePairs =
-                    extendedTimePairs ++ List.filterMap (basicFromExtended (regex ":")) extendedTimePairs
+                    extendedTimePairs
+                        ++ (extendedTimePairs |> List.filterMap (replaceInFirst (regex ":") ""))
+                        ++ (extendedTimePairs |> List.filterMap (replaceInFirst (regex "\\.") ","))
             in
             List.concatMap
                 (\( ds, ( y, m, d ) ) ->
@@ -135,12 +138,12 @@ test_fromIsoString =
         -- list of "<date>T<time>" formatted strings
         dateTimePairs : List ( String, Maybe DateParts )
         dateTimePairs =
-            List.filter (Tuple.first >> String.contains "T") dateAndDateTimePairs
+            dateAndDateTimePairs |> List.filter (Tuple.first >> String.contains "T")
 
         -- create list of "<date>T<time><offset>" formatted strings
         dateTimePairsWithOffset : String -> List ( String, Maybe DateParts )
         dateTimePairsWithOffset offset =
-            List.map (\( s, x ) -> ( s ++ offset, x )) dateTimePairs
+            dateTimePairs |> List.map (\( s, x ) -> ( s ++ offset, x ))
 
         fromIsoStringTest : (Date -> DateParts) -> ( String, Maybe DateParts ) -> Test
         fromIsoStringTest toDateParts ( string, expected ) =
@@ -172,6 +175,7 @@ test_fromIsoString =
                     [ "-07:00"
                     , "-0700"
                     , "-07"
+                    , "−07" -- minus sign
                     ]
                 )
         , describe "converts date strings in offset +04:30" <|
