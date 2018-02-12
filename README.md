@@ -30,27 +30,24 @@ Create dates from strings in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
 format.
 
 ```elm
-Date.fromIsoString "2000-01-01"
--- Just <1 January 2000, local time>
+Date.fromIsoString "2000-01-01T00:00:00.000"
+-- Ok <1 January 2000, local time>
 
 Date.fromIsoString "2009-W01-1T00Z"
--- Just <29 December 2008, UTC>
+-- Ok <29 December 2008, UTC>
 
-Date.fromIsoString "2016-218T20:00-03:00"
--- Just <5 August 2016, 23:00, UTC>
-
-Date.fromIsoString "1/1/2000"
--- Nothing
+Date.fromIsoString "2016-218T20:00:00.000-03:00"
+-- Ok <5 August 2016, 23:00, UTC>
 ```
 
 Create a date from a [specified](http://package.elm-lang.org/packages/justinmimbs/elm-date-extra/latest/Date-Extra#fromSpec)
-time zone, time of day, and day.
+day, time of day, and time offset.
 
 ```elm
 Date.fromSpec
-  (Date.offset -180)
-  (Date.atTime 20 0 0 0)
-  (Date.calendarDate 2016 Aug 5)
+  (calendarDate 2016 Aug 5)
+  (time 20 0 0 0)
+  (offset -180)
 -- <5 August 2016, 23:00, UTC>
 ```
 
@@ -96,5 +93,9 @@ Date.diff Day date (Date.add Week 2 date)
 Date.range Monday 1
   (Date.floor Month date)   -- <1 December 1999>
   (Date.ceiling Month date) -- <1 January 2000>
--- [ <6 December 1999>, <13 December 1999>, <20 December 1999>, <27 December 1999> ]
+-- [ <6 December 1999>
+-- , <13 December 1999>
+-- , <20 December 1999>
+-- , <27 December 1999>
+-- ]
 ```

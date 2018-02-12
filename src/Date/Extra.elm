@@ -48,33 +48,50 @@ module Date.Extra
 
 {-| A `Date` represents a moment in time, encoded by two essential pieces of
 information: the number of milliseconds since 1 January 1970 UTC, and the
-offset between UTC and the current machine's local time. Extractions of a
-`Date` (e.g. `Date.month`, `Date.hour`) return representations of the date in
-local time, while `Date.toTime` returns the UTC representation.
+offset between UTC and the current machine's local time at that moment.
+Extractions of a `Date` (e.g. `Date.month`, `Date.hour`) return representations
+of the date in local time, while `Date.toTime` returns the UTC representation.
 
 
-# Common Constructors
+# Common constructors
 
 @docs fromParts, fromCalendarDate, fromIsoString
 
 
-# Formatted Strings
+# Formatted strings
 
 @docs toFormattedString, toUtcFormattedString, toIsoString, toUtcIsoString
 
 
-# Operations
-
-
-## Dates as Atomic Values
+# Comparing dates
 
 @docs equal, compare, isBetween, clamp
 
 
-## Dates as Composite Values
+# Intervals
 
 These functions work on dates within the context of a given interval of time.
-@docs Interval, equalBy, add, diff, floor, ceiling, range
+@docs Interval
+
+
+## Comparing
+
+@docs equalBy
+
+
+## Arithmetic
+
+@docs add, diff
+
+
+## Rounding
+
+@docs floor, ceiling
+
+
+## Lists
+
+@docs range
 
 
 # Extractions
@@ -82,9 +99,9 @@ These functions work on dates within the context of a given interval of time.
 @docs monthNumber, quarter, ordinalDay, fractionalDay, weekdayNumber, weekNumber, weekYear, offsetFromUtc
 
 
-# Detailed Specification
+# A detailed constructor
 
-In some cases you may want to specify a date with a time offset or from
+In some cases you may want to specify a date with a known time offset or from
 week-date or ordinal-date parts. The `fromSpec` function provides a way to
 do this.
 @docs fromSpec
@@ -97,7 +114,7 @@ do this.
 
 ## TimeSpec
 
-@docs TimeSpec, midnight, time
+@docs TimeSpec, time, midnight
 
 
 ## OffsetSpec
@@ -105,26 +122,26 @@ do this.
 @docs OffsetSpec, utc, offset, local
 
 
-# Rata Die
-
-[Rata Die](https://en.wikipedia.org/wiki/Rata_Die) represents each calendar day
-as a number, using 1 for its base date, _1 January 0001_, and increasing by 1
-each day. Converting to and from Rata Die uses the local representation of a
-`Date`.
-
-    date = Date.fromCalendarDate 2007 Mar 15
-
-    Date.equal
-        (date |> Date.toRataDie |> Date.fromRataDie)
-        date
-    -- True
-
-@docs toRataDie, fromRataDie
-
-
 # Month and Weekday numbers
 
 @docs monthToNumber, numberToMonth, weekdayToNumber, numberToWeekday
+
+
+# Rata Die
+
+[Rata Die](https://en.wikipedia.org/wiki/Rata_Die) is a system for assigning
+numbers to calendar days, using a base date of _1 January 0001_. Converting to
+and from Rata Die uses the local representation of a `Date`.
+
+    date = Date.fromCalendarDate 2007 Mar 15
+
+    date
+        |> Date.toRataDie
+        |> Date.fromRataDie
+        |> Date.equal date
+    -- True
+
+@docs toRataDie, fromRataDie
 
 -}
 
@@ -180,7 +197,7 @@ type TimeSpec
     = TimeMS Int
 
 
-{-| Do not specify a time of day (default to 00:00).
+{-| Convenience value for `time 0 0 0 0`.
 -}
 midnight : TimeSpec
 midnight =
@@ -206,7 +223,7 @@ type OffsetSpec
     | Local
 
 
-{-| Use no offset.
+{-| Use UTC (i.e. no offset).
 -}
 utc : OffsetSpec
 utc =
@@ -231,9 +248,9 @@ local =
 
     Date.fromSpec
         (calendarDate 2000 Jan 1)
-        midnight
+        (time 20 0 0 0)
         local
-    -- <1 January 2000, local time>
+    -- <1 January 2000, 20:00, local time>
 
     Date.fromSpec
         (weekDate 2009 1 Mon)
@@ -310,14 +327,14 @@ fromUnixTime =
 import Date exposing (Month(..))
 import Date.Extra as Date
 
-Date.fromParts 1999 Dec 31 23 59 0 0
--- <31 December 1999, 23:59, local time>
+Date.fromParts 1999 Dec 31 23 59 59 999
+-- <31 December 1999, 23:59:59.999, local time>
 ```
 
 Out-of-range parts are clamped.
 
-    Date.fromParts 2007 Feb 29 0 0 0 0
-    -- <28 February 2007>
+    Date.fromParts 2001 Feb 29 24 60 60 1000
+    -- <28 February 2001, 23:59:59.999>
 
 -}
 fromParts : Int -> Month -> Int -> Int -> Int -> Int -> Int -> Date
@@ -326,9 +343,11 @@ fromParts y m d hh mm ss ms =
 
 
 {-| Convenience function for creating a `Date` from only the year, month, and
-day parts.
+day parts. As with `fromParts`, the day is clamped within the range of days in
+the given month.
 
-    Date.fromCalendarDate 2000 Jan 1
+    Date.fromCalendarDate 2001 Feb 29
+    -- <28 February 2001>
 
 -}
 fromCalendarDate : Int -> Month -> Int -> Date
@@ -467,24 +486,30 @@ fromMatches matches =
             Err "Unexpected matches"
 
 
-{-| Attempt to create a `Date` from a string representing a date in
+{-| Attempt to create a `Date` from a string representing a date/time in
 [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format.
 
+    Date.fromIsoString "2000-01-01T00:00:00.000Z"
+    -- Ok <1 January 2000, UTC>
+
     Date.fromIsoString "2000-01-01"
-    -- Just <1 January 2000, local time>
-
-    Date.fromIsoString "2009-W01-1T00Z"
-    -- Just <29 December 2008, UTC>
-
-    Date.fromIsoString "2016-218T20:00-03:00"
-    -- Just <5 August 2016, 23:00, UTC>
+    -- Ok <1 January 2000, local time>
 
     Date.fromIsoString "1/1/2000"
-    -- Nothing
+    -- Err "Invalid ISO 8601 format"
 
-When a `Date` is created with a specified time offset (e.g. `"-03:00"`),
-its extractions still reflect the current machine's local time, and
-`Date.toTime` still reflects its UTC time.
+The given string must represent a valid date/time; unlike the `fromParts`
+constructor, any out-of-range parts will fail to produce a `Date`.
+
+    Date.fromIsoString "2001-02-29"
+    -- Err "Invalid calendar date"
+
+When a `Date` is created with a specified time offset (e.g. `"-03:00"`), its
+extractions still reflect the current machine's local time, and `Date.toTime`
+still reflects its UTC time.
+
+    Date.fromIsoString "2000-01-01T20:00-03:00"
+    -- Ok <1 January 2000, 23:00, UTC>
 
 -}
 fromIsoString : String -> Result String Date
@@ -751,11 +776,11 @@ withOrdinalSuffix n =
 
 
 -- Formatting is based on Date Format Patterns in Unicode Technical Standard #35
-{- Matches a series of pattern characters, or a single-quoted string (which
-   may contain '' inside, representing an escaped single-quote).
+
+
+{-| Matches a series of pattern characters, or a single-quoted string (which
+may contain '' inside, representing an escaped single-quote).
 -}
-
-
 patternMatches : Regex
 patternMatches =
     regex "([yYQMwdDEeabhHmsSXx])\\1*|'(?:[^']|'')*?'(?!')"
@@ -1105,7 +1130,7 @@ toFormattedString_ asUtc pattern date =
 Each alphabetic character in the pattern represents date or time information;
 the number of times a character is repeated specifies the form of the name to
 use (e.g. "Tue", "Tuesday") or the padding of numbers (e.g. "1", "01").
-Formatting characters are escaped within single-quotes, and a single-quote is
+Formatting characters are escaped within single-quotes; a single-quote is
 escaped as a sequence of two single-quotes, whether appearing inside or outside
 an escaped sequence.
 
@@ -1188,7 +1213,7 @@ toUtcIsoString =
 -- Compare
 
 
-{-| Test equality of two dates.
+{-| Test the equality of two dates.
 -}
 equal : Date -> Date -> Bool
 equal a b =
@@ -1204,7 +1229,7 @@ compare a b =
 
 
 {-| Test if a date is within a given range, inclusive of the range values. The
-expression `Date.isBetween a b x` tests if `x` is between `a` and `b`.
+expression `Date.isBetween min max x` tests if `x` is between `min` and `max`.
 -}
 isBetween : Date -> Date -> Date -> Bool
 isBetween a b x =
@@ -1233,14 +1258,9 @@ clamp minimum maximum date =
 {-| Represents an interval of time.
 -}
 type Interval
-    = Millisecond
-    | Second
-    | Minute
-    | Hour
-    | Day
-    | Month
-    | Year
+    = Year
     | Quarter
+    | Month
     | Week
     | Monday
     | Tuesday
@@ -1249,6 +1269,11 @@ type Interval
     | Friday
     | Saturday
     | Sunday
+    | Day
+    | Hour
+    | Minute
+    | Second
+    | Millisecond
 
 
 {-| Test if two dates fall within the same interval.
@@ -1512,11 +1537,11 @@ ceiling interval date =
 
 
 --------------------------------------------------------------------------------
--- Range
+-- Lists
 
 
 {-| Create a list of dates, at rounded intervals, increasing by a step value,
-between two dates. The list will start at or after the first date, and end
+between two dates. The list will start on or after the first date, and end
 before the second date.
 
     Date.range Day 2
