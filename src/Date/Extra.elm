@@ -23,6 +23,9 @@ module Date.Extra
         , local
         , midnight
         , monthNumber
+        , monthToNumber
+        , numberToMonth
+        , numberToWeekday
         , offset
         , offsetFromUtc
         , ordinalDate
@@ -40,6 +43,7 @@ module Date.Extra
         , weekNumber
         , weekYear
         , weekdayNumber
+        , weekdayToNumber
         )
 
 {-| A `Date` represents a moment in time, encoded by two essential pieces of
@@ -70,7 +74,7 @@ local time, while `Date.toTime` returns the UTC representation.
 ## Dates as Composite Values
 
 These functions work on dates within the context of a given interval of time.
-@docs Interval, equalBy, floor, ceiling, add, diff, range
+@docs Interval, equalBy, add, diff, floor, ceiling, range
 
 
 # Extractions
@@ -86,9 +90,9 @@ do this.
 @docs fromSpec
 
 
-## OffsetSpec
+## DateSpec
 
-@docs OffsetSpec, utc, offset, local
+@docs DateSpec, calendarDate, weekDate, ordinalDate
 
 
 ## TimeSpec
@@ -96,9 +100,9 @@ do this.
 @docs TimeSpec, midnight, time
 
 
-## DateSpec
+## OffsetSpec
 
-@docs DateSpec, calendarDate, weekDate, ordinalDate
+@docs OffsetSpec, utc, offset, local
 
 
 # Rata Die
@@ -117,10 +121,15 @@ each day. Converting to and from Rata Die uses the local representation of a
 
 @docs toRataDie, fromRataDie
 
+
+# Month and Weekday numbers
+
+@docs monthToNumber, numberToMonth, weekdayToNumber, numberToWeekday
+
 -}
 
 import Date exposing (Date, Day(..), Month(..), day, dayOfWeek, fromTime, hour, millisecond, minute, month, second, toTime, year)
-import Date.Facts exposing (daysBeforeMonth, monthToNumber, msPerDay, msPerHour, msPerMinute, msPerSecond, numberToMonth, weekdayToNumber)
+import Date.Facts exposing (daysBeforeMonth, msPerDay, msPerHour, msPerMinute, msPerSecond)
 import Date.RataDie as RataDie exposing (RataDie)
 import Regex exposing (HowMany(All, AtMost), Regex, regex)
 
@@ -1285,11 +1294,6 @@ equalBy interval date1 date2 =
             equalBy Day (floor weekday date1) (floor weekday date2)
 
 
-toParts : Date -> ( Int, Month, Int, Int, Int, Int, Int )
-toParts date =
-    ( year date, month date, day date, hour date, minute date, second date, millisecond date )
-
-
 
 --------------------------------------------------------------------------------
 -- Arithmetic
@@ -1325,17 +1329,17 @@ add interval n date =
         Day ->
             let
                 ( y, m, d, hh, mm, ss, ms ) =
-                    toParts date
+                    ( year date, month date, day date, hour date, minute date, second date, millisecond date )
             in
             fromSpec (DateMS <| unixTimeFromRataDie (RataDie.fromCalendarDate y m d + n)) (time hh mm ss ms) local
 
         Month ->
             let
-                ( y, m, d, hh, mm, ss, ms ) =
-                    toParts date
+                ( y, mn, d, hh, mm, ss, ms ) =
+                    ( year date, monthNumber date, day date, hour date, minute date, second date, millisecond date )
 
                 wholeMonths =
-                    12 * (y - 1) + monthToNumber m - 1 + n
+                    12 * (y - 1) + mn - 1 + n
             in
             fromParts (wholeMonths // 12 + 1) (wholeMonths % 12 + 1 |> numberToMonth) d hh mm ss ms
 
@@ -1436,34 +1440,30 @@ date will be less than or equal to the one provided.
 -}
 floor : Interval -> Date -> Date
 floor interval date =
-    let
-        ( y, m, d, hh, mm, ss, _ ) =
-            toParts date
-    in
     case interval of
         Millisecond ->
             date
 
         Second ->
-            fromParts y m d hh mm ss 0
+            fromParts (year date) (month date) (day date) (hour date) (minute date) (second date) 0
 
         Minute ->
-            fromParts y m d hh mm 0 0
+            fromParts (year date) (month date) (day date) (hour date) (minute date) 0 0
 
         Hour ->
-            fromParts y m d hh 0 0 0
+            fromParts (year date) (month date) (day date) (hour date) 0 0 0
 
         Day ->
-            fromCalendarDate y m d
+            fromCalendarDate (year date) (month date) (day date)
 
         Month ->
-            fromCalendarDate y m 1
+            fromCalendarDate (year date) (month date) 1
 
         Year ->
-            fromCalendarDate y Jan 1
+            fromCalendarDate (year date) Jan 1
 
         Quarter ->
-            fromCalendarDate y (date |> quarter |> quarterToMonth) 1
+            fromCalendarDate (year date) (date |> quarter |> quarterToMonth) 1
 
         Week ->
             fromRataDie ((date |> toRataDie) - daysSincePreviousWeekday Mon date)
@@ -1563,3 +1563,50 @@ toRataDie date =
 fromRataDie : Int -> Date
 fromRataDie rd =
     fromSpec (DateMS <| unixTimeFromRataDie rd) midnight local
+
+
+
+--------------------------------------------------------------------------------
+-- Helpers
+
+
+{-|
+
+    monthToNumber Jan -- 1
+
+-}
+monthToNumber : Month -> Int
+monthToNumber =
+    Date.Facts.monthToNumber
+
+
+{-| Numbers outside the range [1, 12] are clamped.
+
+    numberToMonth -2 -- Jan
+    numberToMonth 15 -- Dec
+
+-}
+numberToMonth : Int -> Month
+numberToMonth =
+    Date.Facts.numberToMonth
+
+
+{-|
+
+    weekdayToNumber Mon -- 1
+
+-}
+weekdayToNumber : Day -> Int
+weekdayToNumber =
+    Date.Facts.weekdayToNumber
+
+
+{-| Numbers outside the range [1, 7] are clamped.
+
+    numberToWeekday -2 -- Mon
+    numberToWeekday 10 -- Sun
+
+-}
+numberToWeekday : Int -> Day
+numberToWeekday =
+    Date.Facts.numberToWeekday
