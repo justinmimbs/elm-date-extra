@@ -7,12 +7,15 @@ Extra functions for working with the `Date` type from the Elm 0.18 core library.
 
 The `Date` module from Elm 0.18 core was replaced by the library [`elm/time`](https://package.elm-lang.org/packages/elm/time/latest/), where the `Date` type is now replaced by `Zone` and `Posix` types. A subset of this package has been ported to work with `Zone` and `Posix`:
 
-- [`justinmimbs/time-extra`](https://package.elm-lang.org/packages/justinmimbs/time-extra/latest/)
+[`justinmimbs/time-extra`](https://package.elm-lang.org/packages/justinmimbs/time-extra/latest/) 
+
+- `fromCalendarDate` becomes `partsToPosix`
+- `compare` no longer exists, but is trivial to implement
 
 Most of the remaining features of this package can be found in these Elm 0.19 packages that work with `Posix`:
 
 - [`rtfeldman/elm-iso8601-date-strings`](https://package.elm-lang.org/packages/rtfeldman/elm-iso8601-date-strings/latest/)
-- [`ryannhg/date-format`](https://package.elm-lang.org/packages/ryannhg/date-format/latest/)
+- [`ryannhg/date-format`](https://package.elm-lang.org/packages/ryannhg/date-format/latest/) (replaces `toFormattedString`)
 
 And if you only need to work with dates, without clock time or time zones, then this `Date` type is available for Elm 0.19:
 
